@@ -18,5 +18,9 @@
     "highlight.js": "^11.8.0",
     "mysql2": "^3.6.0",
     "util": "^0.12.5"
+  },
+  "browser": {
+    "crypto": "false",
+    "stream": "false"
   }
 }
