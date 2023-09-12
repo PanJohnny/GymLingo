@@ -1,7 +1,7 @@
 ---
 import { setUsername } from "../../../../database";
 if (Astro.request.method != "POST")
-    return new Response(undefined, { status: 400 });
+    return new Response(undefined, { status: 405 });
 
 const auth = Astro.request.headers.get("Authorization");
 const url = Astro.url.searchParams.get("username");
