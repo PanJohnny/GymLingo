@@ -69,7 +69,7 @@ export async function login(username:string, password:string) {
 }
 
 export async function setAvatar(token:string, avatar:string) {
-   return setString(token, "avatar_url", avatar);
+   return setString(token, "icon_url", avatar);
 }
 
 export async function setUsername(token:string, username:string) {
