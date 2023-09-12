@@ -1,0 +1,162 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import UserInfo from "../../components/UserInfo.astro";
+---
+
+<Layout title="Váš profil" description="Cool desc">
+    <header>
+        <UserInfo />
+        <h1 style="font-size: larger;">Profil</h1>
+        <h1><a href="/">GymLingo</a></h1>
+    </header>
+    <main>
+        <div class="segment">
+            <h1>Ahoj <span id="name"></span></h1>
+            <img src="" alt="profilový obrázek" id="icon" />
+            <div>
+                <input
+                    type="url"
+                    name="image"
+                    id="img_url"
+                    placeholder="URL Obrázku"
+                />
+                <input type="button" value="Změnit profilovku" id="change_pfp"/>
+            </div>
+        </div>
+        <div class="segment">
+            <h2>Upravit údaje</h2>
+            <div>
+                <h3>Uživatelské jméno:</h3>
+                <input type="text" name="username" id="username" />
+                <input type="button" value="Změnit uživatelské jméno" id="usr_change" />
+            </div>
+            <div>
+                <h3>Heslo:</h3>
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    placeholder="Heslo"
+                />
+                <input
+                    type="password"
+                    name="repeat password"
+                    id="password-again"
+                    placeholder="Zopakujte heslo"
+                />
+                <input type="button" value="Změnit heslo" id="password-btn"/>
+            </div>
+        </div>
+        <div class="segment">
+            <input type="button" value="Odhlásit se" id="logout">
+        </div>
+        <div class="segment">
+            <h2>Pro vývojáře</h2>
+            <p>Pokud chcete využívat API této aplikace, zde je váš token: <code id="token"><input type="button" value="Zobrazit" onclick="document.querySelector('#token').innerHTML = localStorage.getItem('token');"></code></p>
+            <p>Token vždy uveďte v headeru: <code>Authorization: Bearer 00000000-0000-0000-0000-000000000000</code></p>
+            <p>Plná dokumentace na <a href="/developer/docs" target="_blank">/developer/docs</a></p>
+            <p>Nástroj administrátora <a href="/developer/dashboard" target="_blank">/developer/dashboard</a></p>
+        </div>
+    </main>
+</Layout>
+
+<script>
+    const username = localStorage.getItem("username");
+    const token = localStorage.getItem("token");
+    const icon = localStorage.getItem("icon_url");
+
+    const nf = document.querySelector("#name");
+    const ni = document.querySelector("#icon");
+
+    const ui = document.querySelector("#username");
+
+    if (
+        nf instanceof HTMLSpanElement &&
+        ni instanceof HTMLImageElement &&
+        ui instanceof HTMLInputElement
+    ) {
+        nf.innerText = username + "";
+        ni.src = icon + "";
+        ui.setAttribute("placeholder", username + "");
+    }
+
+    const pfp_btn = document.querySelector("#change_pfp");
+    const img_url = document.querySelector("#img_url");
+    if (pfp_btn instanceof HTMLInputElement && img_url instanceof HTMLInputElement) {
+        pfp_btn.addEventListener("click", () => {
+            fetch("/api/user/update/avatar?url=" + encodeURIComponent(img_url.value), {headers: {
+                "Authorization": "Bearer " + token
+            }}).then(s => {
+                localStorage.setItem("icon_url", img_url.value);
+                location.reload();
+            }, err => {
+                alert("Nepodařilo se aktualizovat profilový obrázek. Zkontrolujte, jestli je dostupný online a to na platném odkazu např. https://www.priklad.cz/obrazek.jpg");
+                console.error(err);
+            })
+        });
+    }
+
+    const usr_change = document.querySelector("#usr_change");
+    const username_f = document.querySelector("#username");
+    if (usr_change instanceof HTMLInputElement && username_f instanceof HTMLInputElement) {
+        usr_change.addEventListener("click", () => {
+            fetch("/api/user/update/username?username=" + encodeURIComponent(username_f.value), {headers: {
+                "Authorization": "Bearer " + token
+            }}).then(s => {
+                localStorage.setItem("username", username_f.value);
+                location.reload();
+            }, err => {
+                alert("Nepodařilo se změnit uživatelské jméno");
+                console.error(err);
+            })
+        });
+    }
+
+    const password_btn = document.querySelector("#password-btn");
+    const one = document.querySelector("#password");
+    const two = document.querySelector("#password-again");
+    if (password_btn instanceof HTMLInputElement && one instanceof HTMLInputElement && two instanceof HTMLInputElement) {
+        password_btn.addEventListener("click", () => {
+            if (one.value != two.value) {
+                alert("Hesla se neshodují");
+                return;
+            }
+            fetch("/api/user/update/password?password=" + encodeURIComponent(one.value), {headers: {
+                "Authorization": "Bearer " + token
+            }}).then(s => {
+                alert("Heslo úspěšně změněno");
+            }, err => {
+                alert("Nepodařilo se změnit heslo");
+                console.error(err);
+            })
+        });
+    }
+
+    const logout = document.querySelector("#logout");
+    if (logout instanceof HTMLInputElement) {
+        logout.addEventListener("click", () => {
+            localStorage.clear();
+            location.reload();
+        })
+    }
+</script>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #icon {
+        min-width: 30vw;
+        
+    }
+</style>

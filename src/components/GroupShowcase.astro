@@ -1,0 +1,60 @@
+---
+interface Props {
+    title: string;
+    image: string;
+    group: string;
+    image_desc: string;
+}
+
+const { title, image, group, image_desc } = Astro.props;
+---
+
+<div class="show">
+    <a href={"/dict?g=" + encodeURIComponent(group)}>
+        <div class="image-wrapper">
+            <img src={image} aria-hidden="true" />
+            <div class="image-desc" aria-hidden="true" set:html={image_desc} />
+        </div>
+        <h2>{title}</h2>
+    </a>
+</div>
+
+<style>
+    img {
+        width: 80vw;
+        height: 20vh;
+        object-fit: cover;
+        object-position: 50% 50%;
+    }
+
+    .show {
+        border: 1px solid black;
+        border-radius: 15px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .image-wrapper {
+        position: relative;
+    }
+
+    .image-desc {
+        position: absolute;
+        bottom: 8px;
+        right: 15px;
+        z-index: 2;
+    }
+
+    h2 {
+        text-align: center;
+    }
+
+    .show > a:focus {
+        border: 5px solid darkblue;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
+    }
+</style>

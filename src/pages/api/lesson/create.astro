@@ -1,0 +1,29 @@
+---
+import { createLesson, isAdmin } from "../../../database";
+if (Astro.request.method != "PUT")
+    return new Response(undefined, { status: 400 });
+
+const auth = Astro.request.headers.get("Authorization");
+
+if (auth) {
+    const args = auth.split(" ");
+    if (args.length == 2 && args[0] == "Bearer") {
+        const token = args[1];
+        if (await isAdmin(token)) {
+            // read body
+            const body = await Astro.request.json();
+            
+            if (body.type != undefined && body.czech && body.polish && body.explenation && body.group) {
+                createLesson(body.type, body.czech, body.polish, body.explenation, body.group);
+            } else {
+                return new Response(undefined, { status: 400 });
+            }
+            return new Response(undefined, { status: 201 });
+        } else {
+            return new Response(undefined, { status: 401 });
+        }
+    }
+} else {
+    return new Response(undefined, { status: 401 });
+}
+---

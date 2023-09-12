@@ -1,0 +1,116 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+---
+
+<Layout title="Nástroje administrátora" description="Administrátor">
+    <main>
+        <div id="form">
+            <h1>Vytvořít lekci</h1>
+            Typ:
+            <input type="number" name="" id="type" />
+            Česky:
+            <input type="text" name="" id="czech" />
+            Polsky:
+            <input type="text" name="" id="polish" />
+            Vysvětlení:
+            <input type="text" name="" id="explenation" />
+            Skupina:
+            <input type="text" name="" id="group" />
+            <input type="button" value="Odeslat" id="send" />
+        </div>
+        <a href="https://app.planetscale.com/devstefancz/gymlingo/main" target="_blank" rel="noopener noreferrer">SQL Databáze</a>
+        <div>
+            <h1>Lekce</h1>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Typ</th>
+                    <th>Česky</th>
+                    <th>Polsky</th>
+                    <th>Vysvětlení</th>
+                    <th>Skupina</th>
+                    <th>Odstranění</th>
+                </tr>
+            </table>
+        </div>
+    </main>
+</Layout>
+
+<script>
+    const type: HTMLInputElement = document.querySelector("#type");
+    const czech: HTMLInputElement = document.querySelector("#czech");
+    const explenation: HTMLInputElement =
+        document.querySelector("#explenation");
+    const polish: HTMLInputElement = document.querySelector("#polish");
+    const group: HTMLInputElement = document.querySelector("#group");
+    const send: HTMLInputElement = document.querySelector("#send");
+
+    send.addEventListener("click", () => {
+        const json = {
+            type: type.value,
+            czech: czech.value,
+            explenation: explenation.value,
+            polish: polish.value,
+            group: group.value,
+        };
+
+        fetch("/api/lesson/create", {
+            method: "PUT",
+            body: JSON.stringify(json),
+            headers: {
+                Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+        }).then(
+            (s) => {
+                alert("Úspěšně vytvořeno");
+                location.reload();
+            },
+            (e) => {
+                alert("Chyba " + e);
+            }
+        );
+    });
+
+    fetch("/api/lesson/get", {
+        headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+    })
+        .then((res) => res.json())
+        .then((json) => {
+            json.forEach(el => {
+                const row = document.createElement("tr");
+                Object.values(el).forEach(v => {
+                    const td = document.createElement("td");
+                    td.innerText = v + "";
+                    row.appendChild(td);
+                })
+
+                const td = document.createElement("td");
+                td.innerText = "DELETE FROM lessons WHERE id = " + el.id + ";";
+                row.appendChild(td);
+                document.querySelector("table").appendChild(row);
+            });
+        });
+</script>
+
+<style is:inline>
+    main {
+        margin: 2em;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    th,
+    td {
+        text-align: left;
+        padding: 8px;
+        border: 1px solid #888888;
+    }
+
+    table {
+        max-width: 100%;
+    }
+</style>

@@ -1,0 +1,22 @@
+---
+import { setUsername } from "../../../../database";
+if (Astro.request.method != "POST")
+    return new Response(undefined, { status: 400 });
+
+const auth = Astro.request.headers.get("Authorization");
+const url = Astro.url.searchParams.get("username");
+
+if (auth) {
+    const args = auth.split(" ");
+    if (args.length == 2 && args[0] == "Bearer") {
+        const token = args[1];
+        if (await setUsername(token, url)) {
+            return new Response(undefined, { status: 201 });
+        } else {
+            return new Response(undefined, { status: 401 });
+        }
+    }
+} else {
+    return new Response(undefined, { status: 401 });
+}
+---

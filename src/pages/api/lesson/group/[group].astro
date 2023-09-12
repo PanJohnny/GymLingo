@@ -1,0 +1,12 @@
+---
+import {getLessonsByGroup} from "../../../../database";
+const group = Astro.params.group;
+
+if (Astro.request.method != "GET")
+    return new Response(undefined, {status: 405});
+
+if (!group)
+    return new Response(undefined, {status: 400, statusText: "no group argument provided"});
+
+return new Response(JSON.stringify(await getLessonsByGroup(group)));
+---

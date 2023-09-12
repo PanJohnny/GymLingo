@@ -1,0 +1,284 @@
+---
+import UserInfo from "../../components/UserInfo.astro";
+import Layout from "../../layouts/Layout.astro";
+
+const group = Astro.url.searchParams.get("g");
+if (!group) {
+    return Astro.redirect("/");
+}
+
+let a: string;
+const lessons = await fetch(
+    Astro.url.origin + "/api/lesson/group/" + group
+).then(
+    (r) => r.json(),
+    (e) => (a = e)
+);
+
+if (a) {
+    return Astro.redirect("/?err=fetch+failed");
+}
+if (lessons.length == 0) {
+    return Astro.redirect("/?err=group+empty");
+}
+const first = lessons[0];
+
+const firstImg = await (
+    await fetch(Astro.url.origin + "/api/image?q=" + encodeURI(first.czech))
+).text();
+---
+
+<Layout title="GymLingo" description="Cool popis">
+    <header>
+        <UserInfo />
+        <h1 style="font-size: larger;">Slovíčka</h1>
+        <h1><a href="/">GymLingo</a></h1>
+    </header>
+    <main data-lessons={btoa(encodeURIComponent(JSON.stringify(lessons)))}>
+        <h2 class="task">Přeložte slovo</h2>
+        <div class="container">
+            <div class="floating-segment translate">{first.czech}</div>
+            <div>
+                <input type="text" class="floating-segment answer" />
+                <input type="button" value="❔" class="help" title="Nevím" />
+            </div>
+        </div>
+        <img src={firstImg} alt={first.czech} class="image" />
+    </main>
+    <footer>
+        <div class="correct" hidden>
+            <h3>Správně</h3>
+            <p class="explanation">{first.explanation}</p>
+            <input type="button" value="➡" class="next" />
+        </div>
+
+        <div class="incorrect" hidden>
+            <h3>Špatně</h3>
+            <p>Zkus to znovu, nebo kliknutím na otazník přeskoč otázku</p>
+        </div>
+
+        <div class="idk" hidden>
+            <h3>Zapamatuj si!</h3>
+            <p class="explanation">{first.explanation}</p>
+            <input type="button" value="➡" class="next" />
+        </div>
+    </footer>
+</Layout>
+
+<script>
+    let data;
+    let index = 0;
+    try {
+        data = JSON.parse(
+            decodeURIComponent(
+                atob(
+                    document.querySelector("main").getAttribute("data-lessons")
+                )
+            )
+        );
+    } catch (err) {
+        location.href =
+            "/?err=data+to+client+fail&raw=" + encodeURIComponent(err);
+    }
+
+    if (data) {
+        const answer: HTMLInputElement = document.querySelector(".answer");
+        answer.focus();
+        const help: HTMLInputElement = document.querySelector(".help");
+        const idk:HTMLDivElement = document.querySelector("footer > .idk");
+        const c:HTMLDivElement = document.querySelector("footer > .correct");
+        const i:HTMLDivElement = document.querySelector("footer > .incorrect");
+
+        answer.addEventListener("keyup", (e) => {
+            if (e.key == "Enter") {
+                if (
+                    answer.value.toLowerCase() ==
+                    data[index].polish.toLowerCase()
+                ) {
+                    c.hidden = false;
+                    i.hidden = true;
+                    idk.hidden = true;
+                    answer.classList.add("correct");
+                    help.hidden = true;
+
+                } else {
+                    c.hidden = true;
+                    i.hidden = false;
+                    idk.hidden = true;
+                    answer.classList.add("incorrect");
+                }
+            } else if (answer.classList.contains("incorrect")) {
+                answer.classList.remove("incorrect");
+            }
+        });
+
+        document.querySelectorAll(".next").forEach((btn) => {
+            if (!(btn instanceof HTMLInputElement))
+                return;
+            btn.addEventListener("click", async (e) => {
+                // left click
+                if (e.button == 0) {
+                    index++;
+
+                    if (index >= data.length) {
+                        alert("Sada dokončena!");
+                        return;
+                    }
+
+                    // reload stuff
+                    c.hidden = true;
+                    i.hidden = true;
+                    idk.hidden = true;
+
+                    answer.classList.remove("correct");
+                    const translate: HTMLDivElement =
+                        document.querySelector(".translate");
+                    const img: HTMLImageElement =
+                        document.querySelector(".image");
+
+                    help.hidden = false;
+
+                    translate.innerText = data[index].czech;
+                    document
+                        .querySelectorAll(".explanation")
+                        .forEach((explanation) => {
+                            if (explanation instanceof HTMLParagraphElement)
+                                explanation.innerText = data[index].explanation;
+                        });
+                    answer.value = "";
+                    answer.disabled = false;
+                    answer.focus();
+                    img.src = await (
+                        await fetch(
+                            "/api/image?q=" + encodeURI(data[index].czech)
+                        )
+                    ).text();
+                }
+            });
+        });
+
+        help.addEventListener("click", async (e) => {
+            // left click
+            if (e.button == 0) {
+                c.hidden = true;
+                i.hidden = true;
+                idk.hidden = false;
+                console.log("click");
+
+                answer.disabled = true;
+            }
+        });
+    }
+</script>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .task {
+        font-size: 3rem;
+    }
+
+    .floating-segment {
+        background-color: lightcyan;
+        width: min-content;
+        padding: 0.3em;
+        border: 1px solid black;
+        border-radius: 12px;
+        font-size: larger;
+    }
+
+    .container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 2em;
+        margin: 2em;
+        margin-top: 0em;
+    }
+
+    .answer {
+        justify-content: end;
+        width: 50%;
+    }
+
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    footer {
+        position: fixed;
+        bottom: -10px;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    .idk {
+        background-color: orangered;
+    }
+
+    .incorrect {
+        background-color: red;
+        color: white;
+    }
+
+    footer > div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .image {
+        border-radius: 12px;
+        max-width: 80vw;
+        height: auto;
+    }
+
+    p {
+        margin-top: 0px;
+    }
+
+    .next {
+        position: absolute;
+        right: 10px;
+        padding: 0.5em;
+        font-size: larger;
+        outline: none;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .help {
+        padding: 0.5em;
+        font-size: larger;
+        outline: none;
+        border: none;
+        background: none;
+        cursor: pointer;
+        width: min-content;
+    }
+
+    .next:focus {
+        font-weight: 1000;
+    }
+
+    .correct {
+        background-color: greenyellow;
+    }
+
+    [hidden] {
+        display: none;
+    }
+
+    [disabled] {
+        filter: grayscale(1);
+    }
+</style>

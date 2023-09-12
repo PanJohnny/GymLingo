@@ -1,0 +1,21 @@
+---
+import { isAdmin } from "../../../database";
+if (Astro.request.method != "GET")
+    return new Response(undefined, { status: 400 });
+
+const auth = Astro.request.headers.get("Authorization");
+
+if (auth) {
+    const args = auth.split(" ");
+    if (args.length == 2 && args[0] == "Bearer") {
+        const token = args[1];
+        if (await isAdmin(token)) {
+            return new Response(JSON.stringify({admin: true}), { status: 200 });
+        } else {
+            return new Response(JSON.stringify({admin: false}), { status: 200 });
+        }
+    }
+} else {
+    return new Response(undefined, { status: 401 });
+}
+---

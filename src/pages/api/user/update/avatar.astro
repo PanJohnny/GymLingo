@@ -1,0 +1,26 @@
+---
+import {setAvatar} from "../../../../database";
+if (Astro.request.method != "POST")
+    return new Response(undefined, {status: 400});
+
+const auth = Astro.request.headers.get("Authorization");
+const url = Astro.url.searchParams.get("url");
+if (!url || !url.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/g))
+    return new Response(undefined, {status: 400});
+
+if (auth) {
+    const args = auth.split(" ");
+    if (args.length == 2 && args[0] == "Bearer") {
+        const token = args[1];
+        if (token.match(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g)) {
+            if (await setAvatar(token, url)) {
+                return new Response(undefined, {status: 201});
+            } else {
+                return new Response(undefined, {status: 401});
+            }
+        }
+    }
+} else {
+    return new Response(undefined, {status: 401});
+}
+---
