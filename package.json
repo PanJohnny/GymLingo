@@ -16,6 +16,7 @@
     "@astrojs/markdown-component": "^1.0.5",
     "astro-webmanifest": "^1.0.0",
     "highlight.js": "^11.8.0",
-    "mysql2": "^3.6.0"
+    "mysql2": "^3.6.0",
+    "util": "^0.12.5"
   }
 }
