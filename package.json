@@ -10,17 +10,14 @@
   },
   "devDependencies": {
     "@astrojs/vercel": "^3.5.0",
+    "@types/node": "^20.6.0",
     "astro": "^2.6.4"
   },
   "dependencies": {
     "@astrojs/markdown-component": "^1.0.5",
     "astro-webmanifest": "^1.0.0",
     "highlight.js": "^11.8.0",
-    "mysql2": "^3.6.0",
+    "mysql2": "^3.6.1",
     "util": "^0.12.5"
-  },
-  "browser": {
-    "crypto": "false",
-    "stream": "false"
   }
 }
