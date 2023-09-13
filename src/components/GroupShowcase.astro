@@ -8,17 +8,16 @@ interface Props {
 
 const { title, image, group, image_desc } = Astro.props;
 ---
-
-<div class="show">
-    <a href={"/dict?g=" + encodeURIComponent(group)}>
+<a href={"/dict?g=" + encodeURIComponent(group)}>
+    <div class="show">
+    
         <div class="image-wrapper">
             <img src={image} aria-hidden="true" />
             <div class="image-desc" aria-hidden="true" set:html={image_desc} />
         </div>
         <h2>{title}</h2>
-    </a>
-</div>
-
+    </div>
+</a>
 <style>
     img {
         width: 80vw;
@@ -49,7 +48,7 @@ const { title, image, group, image_desc } = Astro.props;
         text-align: center;
     }
 
-    .show > a:focus {
+    a:focus {
         border: 5px solid darkblue;
     }
 
