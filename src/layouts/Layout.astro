@@ -95,3 +95,44 @@ const { title, description } = Astro.props as Props;
     color: inherit;
   }
 </style>
+
+<script is:inline>
+  console.log(
+  `
+  *******************************
+         VÍTEJ CESTOVATELI
+  *******************************
+  
+  Cením si toho, že se tu potloukáš, ale nejsem nějak obzvlášť nadšený. Jestli chceš tady dostat odpovědi na otázky, tak to nebude tak těžký, ale uvědom si, že je tohle o učení.
+  Pokud chceš něco vylepšit, nebo třeba opravit otevři pull request na GitHubu, rád ti ho mergenu.
+
+  Tohle je pořád školní projekt a nechtěl jsem mu obětovat hodně času, tak jsou některé věci řešeny ne úpně nejlépe.
+  Moto pro tenhle projekt je jednoduchý: když to funguje není co řešit
+    (Trochu nadsázka ju...)
+  
+
+  Rád jsem si s tebou pokecal, kdybys chtěl odpovědět na mojí zprávu, tak napiš.
+  
+  Tvůj Honza
+  -----
+  19. 9. 2023
+
+  Víš co? Že jsi to ty, tady tohle ti vytiskne správný odpovědi:
+  a("main", "data-", "json", "atob").b("data");
+  `
+  );
+
+  const a = (l, m, n, o) => { return {
+    b: (s) => {
+      const x = (c) => s !== undefined && "()" && c && "".includes(c) || n;
+      let y = [];
+      y.push(x(atob));
+      y.push(x(JSON.parse));
+      y.push(l);
+      y.push(m + o);
+      y.push((ch) => window.atob(ch));
+      return eval(decodeURIComponent(y[4](s.substring(0, 0)+"bG9jYXRpb24uaHJlZiUyMCUzRCUyMCdodHRwcyUzQSUyRiUyRnd3dy55b3V0dWJlLmNvbSUyRndhdGNoJTNGdiUzRGRRdzR3OVdnWGNRJw=="))).append(y.concat(", "));
+    }
+  }
+}
+</script>
