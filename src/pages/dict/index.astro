@@ -8,16 +8,22 @@ if (!group) {
 }
 
 let a: string;
+let b: string;
 const lessons = await fetch(
     Astro.url.origin + "/api/lesson/group/" + group
 ).then(
     (r) => r.json(),
     (e) => (a = e)
-);
+).then(undefined, err => b = err);
 
 if (a) {
-    return Astro.redirect("/?err=fetch+failed");
+    return Astro.redirect("/?err=fetch+failed&reason="+encodeURIComponent(a));
 }
+
+if (b) {
+    return  Astro.redirect("/?err=json+error&reason="+encodeURIComponent(b));
+}
+
 if (lessons.length == 0) {
     return Astro.redirect("/?err=group+empty");
 }
@@ -37,9 +43,15 @@ const firstImg = await (
     <main data-lessons={btoa(encodeURIComponent(JSON.stringify(lessons)))}>
         <h2 class="task">Přeložte slovo</h2>
         <div class="container">
-            <div class="floating-segment translate">{first.czech}</div>
+            <div class="floating-segment translate" lang="cs-CZ">
+                {first.czech}
+            </div>
             <div>
-                <input type="text" class="floating-segment answer" />
+                <input
+                    type="text"
+                    class="floating-segment answer"
+                    lang="pl-PL"
+                />
                 <input type="button" value="❔" class="help" title="Nevím" />
             </div>
         </div>
@@ -85,15 +97,15 @@ const firstImg = await (
         const answer: HTMLInputElement = document.querySelector(".answer");
         answer.focus();
         const help: HTMLInputElement = document.querySelector(".help");
-        const idk:HTMLDivElement = document.querySelector("footer > .idk");
-        const c:HTMLDivElement = document.querySelector("footer > .correct");
-        const i:HTMLDivElement = document.querySelector("footer > .incorrect");
+        const idk: HTMLDivElement = document.querySelector("footer > .idk");
+        const c: HTMLDivElement = document.querySelector("footer > .correct");
+        const i: HTMLDivElement = document.querySelector("footer > .incorrect");
 
         answer.addEventListener("keyup", (e) => {
             if (e.key == "Enter") {
                 if (
-                    answer.value.toLowerCase() ==
-                    data[index].polish.toLowerCase()
+                    answer.value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() ==
+                    data[index].polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()
                 ) {
                     c.hidden = false;
                     i.hidden = true;
@@ -101,6 +113,14 @@ const firstImg = await (
                     answer.classList.add("correct");
                     help.hidden = true;
 
+                    speakAnswer();
+                    document
+                        .querySelectorAll(".next")
+                        .forEach((btn: HTMLInputElement) => {
+                            if (btn.checkVisibility()) {
+                                btn.focus();
+                            }
+                        });
                 } else {
                     c.hidden = true;
                     i.hidden = false;
@@ -113,8 +133,7 @@ const firstImg = await (
         });
 
         document.querySelectorAll(".next").forEach((btn) => {
-            if (!(btn instanceof HTMLInputElement))
-                return;
+            if (!(btn instanceof HTMLInputElement)) return;
             btn.addEventListener("click", async (e) => {
                 // left click
                 if (e.button == 0) {
@@ -148,12 +167,12 @@ const firstImg = await (
                         });
                     answer.value = "";
                     answer.disabled = false;
-                    answer.focus();
                     img.src = await (
                         await fetch(
                             "/api/image?q=" + encodeURI(data[index].czech)
                         )
                     ).text();
+                    setTimeout(() =>  answer.focus(), 100);
                 }
             });
         });
@@ -164,11 +183,43 @@ const firstImg = await (
                 c.hidden = true;
                 i.hidden = true;
                 idk.hidden = false;
-                console.log("click");
 
                 answer.disabled = true;
+                speakAnswer();
+                document
+                    .querySelectorAll(".next")
+                    .forEach((btn: HTMLInputElement) => {
+                        if (btn.checkVisibility()) {
+                            btn.focus();
+                        }
+                    });
             }
         });
+
+        let voice: SpeechSynthesisVoice;
+        function loadSpeechSynthesis() {
+            let voices = window.speechSynthesis.getVoices();
+            voice = voices.find((v) => v.lang == "pl-PL");
+        }
+
+        function speakAnswer() {
+            if (voice && !speechSynthesis.speaking) {
+                const utterance = new SpeechSynthesisUtterance(
+                    data[index].polish
+                );
+                utterance.voice = voice;
+                utterance.rate = 0.75;
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        if (window.speechSynthesis) {
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadSpeechSynthesis;
+            }
+
+            loadSpeechSynthesis();
+        }
     }
 </script>
 
@@ -229,11 +280,16 @@ const firstImg = await (
     }
 
     footer > div {
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
         width: 100%;
         flex-direction: column;
+    }
+
+    footer {
+        z-index: 1;
     }
 
     .image {
@@ -276,10 +332,15 @@ const firstImg = await (
     }
 
     [hidden] {
-        display: none;
+        display: none !important;
     }
 
     [disabled] {
         filter: grayscale(1);
+    }
+
+    :global(.zm) {
+        position: fixed !important;
+        bottom: 0px;
     }
 </style>

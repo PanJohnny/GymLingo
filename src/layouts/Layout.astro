@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+import gymlit from "../images/gymlit.png";
 interface Props {
   title: string;
   description: string;
@@ -26,16 +28,66 @@ const { title, description } = Astro.props as Props;
   </head>
   <body>
     <slot />
+    <div class="wrapper">
+      <div class:list={["info", "zm"]}>
+        <p>
+          Vytvořil <a href="https://github.com/PanJohnny">Jan Štefanča</a> v rámci
+          projektů na <a href="https://www.gymlit.cz">Gymnáziu Litoměřická</a>
+        </p>
+      </div>
+      <a href="https://www.gymlit.cz"
+        ><Image
+          src={gymlit}
+          alt="logo gymnázia Litoměřická"
+          class:list={["icon", "zm"]}
+        /></a>
+    </div>
   </body>
 </html>
 
 <style>
   :root {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+      "Lucida Sans", Arial, sans-serif;
   }
 
   body {
     margin-left: 0px;
+  }
+
+  .info {
+    position: relative;
+    bottom: 0px;
+    text-align: center;
+    width: 100%;
+  }
+
+  :global(.zm) {
+    z-index: 0;
+  }
+
+  .info > p {
+    padding: 1em;
+  }
+
+  .icon {
+    position: absolute;
+    height: 4em;
+    width: auto;
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .wrapper {
+    position: relative;
+    bottom: 0px;
+    width: 100%;
+  }
+
+  @media screen and (max-width: 920px) {
+    .icon {
+      display: none;
+    }
   }
 
   :global(h1 > a) {
