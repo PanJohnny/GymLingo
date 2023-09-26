@@ -1,0 +1,116 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+    title="Podmínky ochrany soukromí"
+    description="Podmínky ochrany soukromí"
+>
+    <main>
+        <h1>Podmínky ochrany soukromí</h1>
+        <p>
+            Provozovatel stránky nemá způsob kontaktování uživatele a neuchovává
+            žádná choulostivá data. Je doporučené použít unikátní heslo. Pokud
+            by provozovatel zjistil, že byla nějaká data odcizena uvede to na
+            adrese <a
+                href="/me/breach"
+                target="_blank"
+                rel="noopener noreferrer">/me/breach</a
+            > a na hlavní straně. Prosím dbejte na to, že toto není právní
+            dokument a tato aplikace je pouze studentský projekt. Pokud máte
+            nějaké připomínky, stížnosti apod. prosím kontaktujte mě na adrese <a
+                href="mailto:janstefanca@seznam.cz">janstefanca@seznam.cz</a
+            >.
+        </p>
+        <div>
+            <h2>Jaké informace jsou uchovávány</h2>
+            <ul>
+                <li>Uživatelské jméno</li>
+                <li>Heslo (zaklíčované pomocí SHA-256 algoritmu)</li>
+                <li>URL na profilovou fotografii (pokud ji uživatel uvede)</li>
+                <li>Unikátní klíč pro komunikaci (API token)</li>
+                <li>Data o vyplněných úlohách</li>
+            </ul>
+        </div>
+        <div>
+            <h2>Využití informací o uživateli</h2>
+            <p>
+                Veškeré informace jsou uchovávány jen pro účely uživatele. Žádné
+                informace nejsou sdíleny se třetími stranami.
+            </p>
+        </div>
+        <div>
+            <h2>Odvolání</h2>
+            <p>
+                Uživatel má právo kdykoliv požádat o smazání dat a to na email <a
+                    href="mailto:janstefanca@seznam.cz?subject=%C5%BD%C3%A1dost%20o%20smaz%C3%A1n%C3%AD%20u%C5%BEivatele%20z%20webu%20gymlingo.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer">janstefanca@seznam.cz</a
+                >. V emailu prosím uveďte svůj tzv. token, který naleznete na
+                adrese <a href="/me" target="_blank" rel="noopener noreferrer"
+                    >/me</a
+                > v sekci: Pro vývojáře. Administrátor webu může kdykoliv
+                vymazat váš profil a to bez upozornění.
+            </p>
+        </div>
+        <div>
+            <h2>API</h2>
+            <p>
+                API, neboli aplikační programové rozhraní, je dostupné pro
+                všechny uživatele. Pro dokumentaci se podívejte na: <a
+                    href="/developer/docs"
+                    target="_blank"
+                    rel="noopener noreferrer">/developer/docs</a
+                >
+            </p>
+        </div>
+        <div>
+            <h2>Zdrojový kód</h2>
+            <p>
+                Celkový zdrojový kód aplikace je dostupný online: <a
+                    href="https://github.com/PanJohnny/GymLingo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    >https://github.com/PanJohnny/GymLingo</a
+                >
+            </p>
+            <p>
+                Projekt je licencovaný pod <a
+                    href="https://cs.wikipedia.org/wiki/Licence_MIT"
+                    target="_blank"
+                    rel="noopener noreferrer">licencí MIT</a
+                >. Její plné znění naleznete zde:
+            </p>
+            <pre>
+MIT License
+
+Copyright (c) 2023 Jan Štefanča
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+            </pre>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    main {
+        margin: 2em;
+    }
+</style>

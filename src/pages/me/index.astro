@@ -48,7 +48,8 @@ import UserInfo from "../../components/UserInfo.astro";
             </div>
         </div>
         <div class="segment">
-            <input type="button" value="Odhlásit se" id="logout">
+            <h2>Odhlašte se</h2>
+            <input type="button" value="Odhlásit se" id="logout" />
         </div>
         <div class="segment">
             <h2>Pro vývojáře</h2>
@@ -56,6 +57,10 @@ import UserInfo from "../../components/UserInfo.astro";
             <p>Token vždy uveďte v headeru: <code>Authorization: Bearer 00000000-0000-0000-0000-000000000000</code></p>
             <p>Plná dokumentace na <a href="/developer/docs" target="_blank">/developer/docs</a></p>
             <p>Nástroj administrátora <a href="/developer/dashboard" target="_blank">/developer/dashboard</a></p>
+        </div>
+        <div class="segment">
+            <h2>Dokumenty</h2>
+            <a href="/me/privacy" target="_blank">Podmínky ochrany soukromí</a>
         </div>
     </main>
 </Layout>
@@ -157,6 +162,6 @@ import UserInfo from "../../components/UserInfo.astro";
 
     #icon {
         min-width: 30vw;
-        
+        max-width: 50vw;
     }
 </style>

@@ -1,0 +1,30 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Bezpečnostní incidenty" description="Hlášení o incidentech">
+    <main>
+        <h1>Bezpečnostní incidenty</h1>
+        <h2 class="yaay">Žádné incidenty nebyli zaznamenány</h2>
+    </main>
+</Layout>
+
+<style>
+    main {
+        padding: 2em;
+        height: 90vh;
+        background: url("/confetti.gif") 0 0 no-repeat;
+        border-radius: 12px;
+        background-position: 50%;
+    }
+
+    .yaay {
+        text-align: center;
+    }
+</style>
+
+<script>
+    setTimeout(() => {
+        document.querySelector("main").style.backgroundImage = "none";
+    }, 2490);
+</script>

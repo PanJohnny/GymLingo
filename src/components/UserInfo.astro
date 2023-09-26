@@ -7,15 +7,20 @@
 
 <dialog id="login">
     <h2>Přihlašte se prosím</h2>
-    <p>K používání této aplikace potřebujete účet</p>
+    <p>K používání této aplikace potřebujete účet. Pokud ho ještě nemáte vyplňte údaje a registrujte se, pokud již máte vyplňte údaje a přihlašte se.</p>
     <div>
-        <input type="text" name="username" id="usri-username" />
-        <input type="password" name="password" id="usri-password" />
+        <input type="text" name="username" id="usri-username" placeholder="Uživatelské jméno" />
+    </div>
+    <div>
+        <input type="password" name="password" id="usri-password" placeholder="Heslo" />
     </div>
     <div>
         <input type="button" value="Přihlásit se" id="logon" />
         <input type="button" value="Registrovat se" id="register" />
     </div>
+    <p>
+        Registrací dáváte souhlas <a href="/me/privacy" target="_blank" rel="noopener noreferrer">podmínkám ochrany soukromí</a>
+    </p>
 </dialog>
 
 <style>
@@ -27,6 +32,19 @@
         max-width: 20%;
         margin: .5em;
         padding-left: 1em;
+    }
+
+    #login {
+        text-align: center;
+        max-width: 50%;
+    }
+
+    input {
+        padding: .4em;
+        margin: .2em;
+        border-radius: 4px;
+        outline: none;
+        border: 1px solid black;
     }
 </style>
 

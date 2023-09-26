@@ -91,6 +91,8 @@ import Layout from "../../../layouts/Layout.astro";
                 row.appendChild(td);
                 document.querySelector("table").appendChild(row);
             });
+        }).catch((err) => {
+            window.location.href = "/?err=401"
         });
 </script>
 
