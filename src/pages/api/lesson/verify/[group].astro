@@ -1,0 +1,26 @@
+---
+import { verifyLesson } from "../../../../database";
+const group = Astro.params.group;
+const id = Astro.url.searchParams.get("id");
+const polish = Astro.url.searchParams.get("polish");
+const auth = Astro.request.headers.get("Authorization");
+
+if (Astro.request.method != "POST") {
+    return new Response(undefined, { status: 405 });
+}
+
+if (!group || id == null || !auth || !polish) {
+    return new Response(undefined, { status: 400 });
+}
+
+let token;
+
+const args = auth.split(" ");
+if (args.length == 2 && args[0] == "Bearer") token = args[1];
+
+if (!token) return new Response(undefined, { status: 400 });
+
+return new Response(await verifyLesson(token, group, id, polish) + "", {headers: {
+    "Cache-Control": "max-age=85000"
+}});
+---

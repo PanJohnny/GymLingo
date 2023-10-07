@@ -1,0 +1,113 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+---
+
+<Layout title="Přihlásit se" description="Přihlašte se do svého profilu">
+    <main>
+        <div>
+            <h1>Přihlašte se prosím</h1>
+            <p>K používání této aplikace potřebujete účet.</p>
+            <div>
+                <input
+                    type="text"
+                    name="username"
+                    id="usri-username"
+                    placeholder="Uživatelské jméno"
+                />
+            </div>
+            <div>
+                <input
+                    type="password"
+                    name="password"
+                    id="usri-password"
+                    placeholder="Heslo"
+                />
+            </div>
+            <div>
+                <input type="button" value="Přihlásit se" id="logon" />
+                <p>
+                    Nemáte účet? <a href="/me/auth/register">Registrujte se</a>
+                </p>
+            </div>
+            <p>
+                <a href="/me/privacy" target="_blank" rel="noopener noreferrer"
+                    >Podmínky ochrany soukromí</a
+                >
+            </p>
+        </div>
+    </main>
+</Layout>
+
+<script type="module">
+    // @ts-ignore
+    import { setCookie } from "/cookies.js";
+    const logon = document.querySelector("#logon");
+
+    const user = document.querySelector("#usri-username");
+    const pass = document.querySelector("#usri-password");
+
+    function checkFields() {
+        if (
+            // @ts-ignore
+            user.value.length < 3 || // @ts-ignore
+            pass.value.length < 6 || // @ts-ignore
+            user.value.length > 255 || // @ts-ignore
+            pass.value.length > 255
+        ) {
+            window.alert(
+                "Uživatelské jméno a heslo musí být vyplněno. Uživatelské jméno musí minimálně obsahovat 3 znaky a heslo 6 znaků. Maximální počet znaků pro obě pole je 255.",
+            );
+
+            return false;
+        }
+        return true;
+    }
+
+    if (
+        logon instanceof HTMLInputElement &&
+        user instanceof HTMLInputElement &&
+        pass instanceof HTMLInputElement
+    ) {
+        logon.addEventListener("click", async () => {
+            if (checkFields()) {
+                const stuff = await fetch("/api/user/login", {
+                    method: "POST",
+                    headers: {
+                        Username: user.value,
+                        Password: pass.value,
+                    },
+                }).then((res) => {
+                    if (res.status != 200) {
+                        window.alert(
+                            "Špatné přihlašovací údaje, nebo účet neexistuje.",
+                        );
+                    }
+                    return res.json();
+                });
+                localStorage.setItem("username", stuff.username);
+                setCookie("token", stuff.token, 7);
+
+                location.href = "/";
+            }
+        });
+    }
+</script>
+
+<style>
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+    }
+    input {
+        padding: 0.4em;
+        margin: 0.2em;
+        border-radius: 4px;
+        outline: none;
+        border: 1px solid black;
+    }
+    input[type="button"] {
+        cursor: pointer;
+    }
+</style>

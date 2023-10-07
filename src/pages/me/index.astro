@@ -1,6 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import UserInfo from "../../components/UserInfo.astro";
+
+if (!Astro.cookies.has("token"))
+    return Astro.redirect("/me/auth/login");
 ---
 
 <Layout title="Váš profil" description="Cool desc">
@@ -12,7 +15,7 @@ import UserInfo from "../../components/UserInfo.astro";
     <main>
         <div class="segment">
             <h1>Ahoj <span id="name"></span></h1>
-            <img src="" alt="profilový obrázek" id="icon" />
+            <img src={"/api/user/icon/"+Astro.cookies.get("token").value} alt="profilový obrázek" id="icon" />
             <div>
                 <input
                     type="url"
@@ -53,7 +56,7 @@ import UserInfo from "../../components/UserInfo.astro";
         </div>
         <div class="segment">
             <h2>Pro vývojáře</h2>
-            <p>Pokud chcete využívat API této aplikace, zde je váš token: <code id="token"><input type="button" value="Zobrazit" onclick="document.querySelector('#token').innerHTML = localStorage.getItem('token');"></code></p>
+            <p>Pokud chcete využívat API této aplikace, zde je váš token: <code id="token"><input type="button" value="Zobrazit" onclick={"document.querySelector('#token').innerHTML = '" + Astro.cookies.get("token").value + "'"}></code></p>
             <p>Token vždy uveďte v headeru: <code>Authorization: Bearer 00000000-0000-0000-0000-000000000000</code></p>
             <p>Plná dokumentace na <a href="/developer/docs" target="_blank">/developer/docs</a></p>
             <p>Nástroj administrátora <a href="/developer/dashboard" target="_blank">/developer/dashboard</a></p>
@@ -65,23 +68,22 @@ import UserInfo from "../../components/UserInfo.astro";
     </main>
 </Layout>
 
-<script>
+<script type="module">
+    // @ts-ignore
+    import {getCookie, deleteAllCookies} from "/cookies.js";
+
     const username = localStorage.getItem("username");
-    const token = localStorage.getItem("token");
-    const icon = localStorage.getItem("icon_url");
+    const token = getCookie("token");
 
     const nf = document.querySelector("#name");
-    const ni = document.querySelector("#icon");
 
     const ui = document.querySelector("#username");
 
     if (
         nf instanceof HTMLSpanElement &&
-        ni instanceof HTMLImageElement &&
         ui instanceof HTMLInputElement
     ) {
         nf.innerText = username + "";
-        ni.src = icon + "";
         ui.setAttribute("placeholder", username + "");
     }
 
@@ -141,6 +143,7 @@ import UserInfo from "../../components/UserInfo.astro";
     if (logout instanceof HTMLInputElement) {
         logout.addEventListener("click", () => {
             localStorage.clear();
+            deleteAllCookies();
             location.reload();
         })
     }

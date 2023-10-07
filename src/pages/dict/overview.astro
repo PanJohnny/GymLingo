@@ -1,0 +1,42 @@
+---
+import UserInfo from "../../components/UserInfo.astro";
+import { groupFinished } from "../../database";
+import Layout from "../../layouts/Layout.astro";
+
+const group = Astro.url.searchParams.get("group");
+if (!group || !Astro.cookies.has("token"))
+    return Astro.redirect("/?err=overview");
+
+const gf = await groupFinished(group, Astro.cookies.get("token").value);
+---
+
+<Layout title="GymLingo" description="Cool popis">
+    <header>
+        <UserInfo />
+        <h1 style="font-size: larger;">Slovíčka</h1>
+        <h1><a href="/">GymLingo</a></h1>
+    </header>
+    <main>
+        <div class="wow"><h1>{gf.finished + "/" + gf.lessons}</h1>
+            <h2>{Math.round(gf.ratio * 100) + "%"}</h2>
+            <h3>{Astro.url.searchParams.has("completed")?"Sada splněna!":""}</h3>
+            <a href="/">Zpět na přehled cvičení</a>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    .wow {
+        height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+</style>

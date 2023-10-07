@@ -1,6 +1,6 @@
 import * as mysql from "mysql2";
 
-export async function createAccount(username:string, password:string) {
+export async function createAccount(username: string, password: string) {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     // Check if username exists `
     const selected = connection.promise().query(`SELECT COUNT(1) FROM users WHERE username = ?`, [username]);
@@ -16,12 +16,12 @@ export async function createAccount(username:string, password:string) {
     return true;
 }
 
-export function createLesson(type:number, czech:string, polish:string, explanation:string, group:string) {
+export function createLesson(type: number, czech: string, polish: string, explanation: string, group: string) {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
         connection.query(`INSERT INTO lessons (type, czech, polish, explanation, \`group\`) VALUES (?, ?, ?, ?, ?)`, [type, czech, polish, explanation, group]);
         connection.end();
-    } catch(err) {
+    } catch (err) {
         connection.end();
         return false;
     }
@@ -31,28 +31,42 @@ export function createLesson(type:number, czech:string, polish:string, explanati
 export async function getLessons() {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
-        const el =  (await connection.promise().query(`SELECT * FROM lessons`)).at(0);
+        const el = (await connection.promise().query(`SELECT * FROM lessons`)).at(0);
         connection.end();
         return el;
-    } catch(err) {
+    } catch (err) {
         connection.end();
         return false;
     }
 }
 
-export async function getLessonsByGroup(group:string) {
+export async function getLesson(id: number) {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
-        const el =  (await connection.promise().query(`SELECT * FROM lessons WHERE \`group\` = ?`, [group])).at(0);
+        const el = (await connection.promise().query(`SELECT * FROM lessons WHERE id = ${id}`)).at(0);
         connection.end();
         return el;
-    } catch(err) {
+    } catch (err) {
+        console.log(err);
+
+        connection.end();
+        return false;
+    }
+}
+
+export async function getLessonsByGroup(group: string) {
+    const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
+    try {
+        const el = (await connection.promise().query(`SELECT * FROM lessons WHERE \`group\` = ?`, [group])).at(0);
+        connection.end();
+        return el;
+    } catch (err) {
         connection.end();
         return err;
     }
 }
 
-export async function login(username:string, password:string) {
+export async function login(username: string, password: string) {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     // Check if username exists `
     const selected = connection.promise().query(`SELECT username, password, icon_url FROM users WHERE username = ?`, [username]);
@@ -68,24 +82,34 @@ export async function login(username:string, password:string) {
     return false;
 }
 
-export async function setAvatar(token:string, avatar:string) {
-   return setString(token, "icon_url", avatar);
+export async function getIcon(token: string) {
+    // @ts-ignore
+    return (await get(token, "icon_url")).at(0).at(0).icon_url;
 }
 
-export async function setUsername(token:string, username:string) {
+export async function setAvatar(token: string, avatar: string) {
+    return setString(token, "icon_url", avatar);
+}
+
+export async function setUsername(token: string, username: string) {
     return setString(token, "username", username);
 }
 
-export async function setPassword(token:string, password:string) {
+export async function setPassword(token: string, password: string) {
     return setString(token, "password", password)
 }
 
-export async function isAdmin(token:string) {
+export async function isAdmin(token: string) {
     // @ts-ignore
     return (await get(token, "admin")).at(0).at(0).admin;
 }
 
-async function get(token:string, key:string) {
+export async function getUser(token: string) {
+    // @ts-ignore
+    return (await get(token, "username, icon_url, admin")).at(0).at(0);
+}
+
+async function get(token: string, key: string) {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
         const el = await connection.promise().query(`SELECT ${key} FROM users WHERE token = UUID_TO_BIN(?)`, token);
@@ -98,12 +122,78 @@ async function get(token:string, key:string) {
     }
 }
 
-async function setString(token:string, key:string, value:string) {
+async function setString(token: string, key: string, value: string) {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
         await connection.promise().query(`UPDATE users SET ${key} = '${value}' WHERE token = UUID_TO_BIN(?)`, token);
         connection.end();
         return true;
+    } catch (err) {
+        console.error(err);
+        connection.end();
+        return false;
+    }
+}
+
+export async function verifyLesson(token: string, group: string, lesson_id: number, polish: string) {
+    const user_id = (await get(token, "id")).at(0).at(0).id;
+    if (lesson_id == null || !user_id)
+        return false;
+
+    const la = await getLesson(lesson_id);
+
+    if (!la || la.length != 1)
+        return false;
+
+    const lesson = la.at(0);
+
+    if (lesson.polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() !=
+        polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase())
+        return false;
+
+    const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
+
+    try {
+        await connection.promise().query(`
+    INSERT INTO lpu (\`user_id\`, \`lesson_id\`, \`group\`)
+    SELECT ${user_id}, ${lesson_id}, "${group}"
+    WHERE NOT EXISTS (
+        SELECT \`user_id\` FROM lpu
+        WHERE \`user_id\` = ${user_id}
+        AND \`group\` = "${group}"
+        AND \`lesson_id\` = ${lesson_id}
+    )
+`);
+        connection.end();
+        return true;
+    } catch (err) {
+        console.error(err);
+        connection.end();
+        return false;
+    }
+}
+
+export async function groupFinished(group: string, token: string) {
+    const user_id = (await get(token, "id")).at(0).at(0).id;
+    if (!user_id)
+        return false;
+
+    const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
+
+    try {
+        const el = await connection.promise().query(`
+        SELECT
+    (SELECT COUNT(*) FROM lpu WHERE user_id = ${user_id} AND \`group\` = "${group}") AS finished,
+    (SELECT COUNT(*) FROM lessons WHERE \`group\` = "${group}") AS lessons,
+    (
+        SELECT COUNT(*) FROM lpu WHERE user_id = ${user_id} AND \`group\` = "${group}"
+    ) / (
+        SELECT COUNT(*) FROM lessons WHERE \`group\` = "${group}"
+    ) AS ratio;
+        `);
+
+        connection.end();
+        return el.at(0).at(0);
     } catch (err) {
         console.error(err);
         connection.end();

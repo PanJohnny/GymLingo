@@ -13,8 +13,8 @@ if (auth) {
             // read body
             const body = await Astro.request.json();
             
-            if (body.type != undefined && body.czech && body.polish && body.explenation && body.group) {
-                createLesson(body.type, body.czech, body.polish, body.explenation, body.group);
+            if (body.type != undefined && body.czech && body.polish && body.group) {
+                createLesson(body.type, body.czech, body.polish, body.explenation?body.explanation:"", body.group);
             } else {
                 return new Response(undefined, { status: 400 });
             }

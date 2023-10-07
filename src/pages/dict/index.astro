@@ -1,5 +1,6 @@
 ---
 import UserInfo from "../../components/UserInfo.astro";
+import { getLessonsByGroup } from "../../database";
 import Layout from "../../layouts/Layout.astro";
 
 const group = Astro.url.searchParams.get("g");
@@ -9,19 +10,14 @@ if (!group) {
 
 let a: string;
 let b: string;
-const lessons = await fetch(
-    Astro.url.origin + "/api/lesson/group/" + group
-).then(
-    (r) => r.json(),
-    (e) => (a = e)
-).then(undefined, err => b = err);
+const lessons = await getLessonsByGroup(group);
 
 if (a) {
-    return Astro.redirect("/?err=fetch+failed&reason="+encodeURIComponent(a));
+    return Astro.redirect("/?err=fetch+failed&reason=" + encodeURIComponent(a));
 }
 
 if (b) {
-    return  Astro.redirect("/?err=json+error&reason="+encodeURIComponent(b));
+    return Astro.redirect("/?err=json+error&reason=" + encodeURIComponent(b));
 }
 
 if (lessons.length == 0) {
@@ -32,6 +28,14 @@ const first = lessons[0];
 const firstImg = await (
     await fetch(Astro.url.origin + "/api/image?q=" + encodeURI(first.czech))
 ).text();
+
+const lessonsDeleted = lessons.map((l) => {
+    const newObject = { ...l };
+
+    delete newObject.polish;
+
+    return newObject;
+});
 ---
 
 <Layout title="GymLingo" description="Cool popis">
@@ -40,7 +44,9 @@ const firstImg = await (
         <h1 style="font-size: larger;">Slovíčka</h1>
         <h1><a href="/">GymLingo</a></h1>
     </header>
-    <main data-lessons={btoa(encodeURIComponent(JSON.stringify(lessons)))}>
+    <main
+        data-lessons={btoa(encodeURIComponent(JSON.stringify(lessonsDeleted)))}
+    >
         <h2 class="task">Přeložte slovo</h2>
         <div class="container">
             <div class="floating-segment translate" lang="cs-CZ">
@@ -77,150 +83,158 @@ const firstImg = await (
     </footer>
 </Layout>
 
-<script>
-    let data;
-    let index = 0;
-    try {
-        data = JSON.parse(
-            decodeURIComponent(
-                atob(
-                    document.querySelector("main").getAttribute("data-lessons")
-                )
-            )
-        );
-    } catch (err) {
-        location.href =
-            "/?err=data+to+client+fail&raw=" + encodeURIComponent(err);
-    }
+<script type="module" type="text/javascript">
+import { getCookie } from "/cookies.js";
 
-    if (data) {
-        const answer: HTMLInputElement = document.querySelector(".answer");
-        answer.focus();
-        const help: HTMLInputElement = document.querySelector(".help");
-        const idk: HTMLDivElement = document.querySelector("footer > .idk");
-        const c: HTMLDivElement = document.querySelector("footer > .correct");
-        const i: HTMLDivElement = document.querySelector("footer > .incorrect");
+let data;
+let index = 0;
+try {
+    data = JSON.parse(
+        decodeURIComponent(
+            atob(
+                document.querySelector("main").getAttribute("data-lessons"),
+            ),
+        ),
+    );
+} catch (err) {
+    location.href =
+        "/?err=data+to+client+fail&raw=" + encodeURIComponent(err);
+}
 
-        answer.addEventListener("keyup", (e) => {
-            if (e.key == "Enter") {
-                if (
-                    answer.value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() ==
-                    data[index].polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()
-                ) {
-                    c.hidden = false;
-                    i.hidden = true;
-                    idk.hidden = true;
-                    answer.classList.add("correct");
-                    help.hidden = true;
+if (data) {
+    const answer = document.querySelector(".answer");
+    answer.focus();
+    const help = document.querySelector(".help");
+    const idk = document.querySelector("footer > .idk");
+    const c = document.querySelector("footer > .correct");
+    const i = document.querySelector("footer > .incorrect");
 
-                    speakAnswer();
-                    document
-                        .querySelectorAll(".next")
-                        .forEach((btn: HTMLInputElement) => {
-                            if (btn.checkVisibility()) {
-                                btn.focus();
-                            }
-                        });
-                } else {
-                    c.hidden = true;
-                    i.hidden = false;
-                    idk.hidden = true;
-                    answer.classList.add("incorrect");
-                }
-            } else if (answer.classList.contains("incorrect")) {
-                answer.classList.remove("incorrect");
-            }
-        });
+    answer.addEventListener("keyup", async (e) => {
+        if (e.key == "Enter") {
+            if (
+                (await (
+                    await fetch(
+                        `/api/lesson/verify/${data[index].group}?id=${data[index].id
+                        }&polish=${encodeURIComponent(answer.value)}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                Authorization: `Bearer ${getCookie(
+                                    "token",
+                                )}`,
+                            },
+                        },
+                    )
+                ).text()) == "true"
+            ) {
+                c.hidden = false;
+                i.hidden = true;
+                idk.hidden = true;
+                answer.classList.add("correct");
+                help.hidden = true;
 
-        document.querySelectorAll(".next").forEach((btn) => {
-            if (!(btn instanceof HTMLInputElement)) return;
-            btn.addEventListener("click", async (e) => {
-                // left click
-                if (e.button == 0) {
-                    index++;
-
-                    if (index >= data.length) {
-                        alert("Sada dokončena!");
-                        return;
+                speakAnswer();
+                document.querySelectorAll(".next").forEach((btn) => {
+                    if (btn.checkVisibility()) {
+                        btn.focus();
                     }
+                });
+            } else {
+                c.hidden = true;
+                i.hidden = false;
+                idk.hidden = true;
+                answer.classList.add("incorrect");
+            }
+        } else if (answer.classList.contains("incorrect")) {
+            answer.classList.remove("incorrect");
+        }
+    });
 
-                    // reload stuff
-                    c.hidden = true;
-                    i.hidden = true;
-                    idk.hidden = true;
-
-                    answer.classList.remove("correct");
-                    answer.classList.remove("incorrect");
-                    const translate: HTMLDivElement =
-                        document.querySelector(".translate");
-                    const img: HTMLImageElement =
-                        document.querySelector(".image");
-
-                    help.hidden = false;
-
-                    translate.innerText = data[index].czech;
-                    document
-                        .querySelectorAll(".explanation")
-                        .forEach((explanation) => {
-                            if (explanation instanceof HTMLParagraphElement)
-                                explanation.innerText = data[index].explanation;
-                        });
-                    answer.value = "";
-                    answer.disabled = false;
-                    img.src = await (
-                        await fetch(
-                            "/api/image?q=" + encodeURI(data[index].czech)
-                        )
-                    ).text();
-                    setTimeout(() =>  answer.focus(), 100);
-                }
-            });
-        });
-
-        help.addEventListener("click", async (e) => {
+    document.querySelectorAll(".next").forEach((btn) => {
+        if (!(btn instanceof HTMLInputElement)) return;
+        btn.addEventListener("click", async (e) => {
             // left click
             if (e.button == 0) {
+                index++;
+
+                if (index >= data.length) {
+                    location.href = "/dict/overview?group=" + data[0].group + "&completed"
+                    return;
+                }
+
+                // reload stuff
                 c.hidden = true;
                 i.hidden = true;
-                idk.hidden = false;
+                idk.hidden = true;
 
-                answer.disabled = true;
-                speakAnswer();
+                answer.classList.remove("correct");
+                answer.classList.remove("incorrect");
+                const translate = document.querySelector(".translate");
+                const img = document.querySelector(".image");
+
+                help.hidden = false;
+
+                translate.innerText = data[index].czech;
                 document
-                    .querySelectorAll(".next")
-                    .forEach((btn: HTMLInputElement) => {
-                        if (btn.checkVisibility()) {
-                            btn.focus();
-                        }
+                    .querySelectorAll(".explanation")
+                    .forEach((explanation) => {
+                        if (explanation instanceof HTMLParagraphElement)
+                            explanation.innerText = data[index].explanation;
                     });
+                answer.value = "";
+                answer.disabled = false;
+                img.src = await (
+                    await fetch(
+                        "/api/image?q=" + encodeURI(data[index].czech),
+                    )
+                ).text();
+                setTimeout(() => answer.focus(), 100);
             }
         });
+    });
 
-        let voice: SpeechSynthesisVoice;
-        function loadSpeechSynthesis() {
-            let voices = window.speechSynthesis.getVoices();
-            voice = voices.find((v) => v.lang == "pl-PL");
+    help.addEventListener("click", async (e) => {
+        // left click
+        if (e.button == 0) {
+            c.hidden = true;
+            i.hidden = true;
+            idk.hidden = false;
+
+            answer.disabled = true;
+            speakAnswer();
+            document.querySelectorAll(".next").forEach((btn) => {
+                if (btn.checkVisibility()) {
+                    btn.focus();
+                }
+            });
         }
+    });
 
-        function speakAnswer() {
-            if (voice && !speechSynthesis.speaking) {
-                const utterance = new SpeechSynthesisUtterance(
-                    data[index].polish
-                );
-                utterance.voice = voice;
-                utterance.rate = 0.75;
-                speechSynthesis.speak(utterance);
-            }
-        }
+    let voice;
+    function loadSpeechSynthesis() {
+        let voices = window.speechSynthesis.getVoices();
+        voice = voices.find((v) => v.lang == "pl-PL");
+    }
 
-        if (window.speechSynthesis) {
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = loadSpeechSynthesis;
-            }
-
-            loadSpeechSynthesis();
+    function speakAnswer() {
+        if (voice && !speechSynthesis.speaking) {
+            const utterance = new SpeechSynthesisUtterance(
+                data[index].polish,
+            );
+            utterance.voice = voice;
+            utterance.rate = 0.75;
+            speechSynthesis.speak(utterance);
         }
     }
+
+    if (window.speechSynthesis) {
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadSpeechSynthesis;
+        }
+
+        loadSpeechSynthesis();
+    }
+}
 </script>
 
 <style>
@@ -236,7 +250,7 @@ const firstImg = await (
 
     .floating-segment {
         background-color: lightcyan;
-        width: min-content;
+        width: fit-content;
         padding: 0.3em;
         border: 1px solid black;
         border-radius: 12px;

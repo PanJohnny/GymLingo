@@ -1,27 +1,28 @@
+---
+import { getUser } from "../database";
+// Get token
+const token = Astro.cookies.get("token");
+if (!token) return Astro.redirect("/me/auth/login");
+
+const user = await getUser(token.value);
+---
 
 <div class="info">
-    <img src="" alt="profile icon" height="50px" width="50px" id="usri-icon" >
-    <a href="/me" style="text-decoration: none; color: inherit;"><div id="usri-name"></div></a>
-    <div class="isAdmin"></div>
+    <img
+        src={user.icon_url
+            ? user.icon_url
+            : "https://ui-avatars.com/api/?format=svg&name=" +
+              user.username.replaceAll(" ", "+")}
+        alt="profile icon"
+        height="50px"
+        width="50px"
+        id="usri-icon"
+    />
+    <a href="/me" style="text-decoration: none; color: inherit;"
+        ><div id="usri-name">{user.username}</div></a
+    >
+    <div class="isAdmin">{user.admin ? "Administrátor" : "Uživatel"}</div>
 </div>
-
-<dialog id="login">
-    <h2>Přihlašte se prosím</h2>
-    <p>K používání této aplikace potřebujete účet. Pokud ho ještě nemáte vyplňte údaje a registrujte se, pokud již máte vyplňte údaje a přihlašte se.</p>
-    <div>
-        <input type="text" name="username" id="usri-username" placeholder="Uživatelské jméno" />
-    </div>
-    <div>
-        <input type="password" name="password" id="usri-password" placeholder="Heslo" />
-    </div>
-    <div>
-        <input type="button" value="Přihlásit se" id="logon" />
-        <input type="button" value="Registrovat se" id="register" />
-    </div>
-    <p>
-        Registrací dáváte souhlas <a href="/me/privacy" target="_blank" rel="noopener noreferrer">podmínkám ochrany soukromí</a>
-    </p>
-</dialog>
 
 <style>
     .info {
@@ -30,103 +31,7 @@
         justify-content: center;
         align-items: center;
         max-width: 20%;
-        margin: .5em;
+        margin: 0.5em;
         padding-left: 1em;
     }
-
-    #login {
-        text-align: center;
-        max-width: 50%;
-    }
-
-    input {
-        padding: .4em;
-        margin: .2em;
-        border-radius: 4px;
-        outline: none;
-        border: 1px solid black;
-    }
 </style>
-
-<script>
-    // check localStorage
-    const username = localStorage.getItem("username");
-    const token = localStorage.getItem("token");
-    const icon = localStorage.getItem("icon_url");
-
-    if (!username || !token) {
-        const login = document.querySelector("#login");
-        if (login instanceof HTMLDialogElement) {
-            login.addEventListener("close", () => {
-                location.reload();
-            });
-            const logon = document.querySelector("#logon");
-            const register = document.querySelector("#register");
-
-            const user = document.querySelector("#usri-username");
-            const pass = document.querySelector("#usri-password");
-
-            if (
-                logon instanceof HTMLInputElement &&
-                register instanceof HTMLInputElement &&
-                user instanceof HTMLInputElement &&
-                pass instanceof HTMLInputElement
-            ) {
-                login.showModal();
-                const checkFields = () => {
-                    if (user.value.length < 3 && pass.value.length < 6 && user.value.length > 255 && pass.value.length > 255) {
-                        alert("Uživatelské jméno a heslo musí být vyplněno. Uživatelské jméno musí minimálně obsahovat 3 znaky a heslo 6 znaků. Maximální počet znaků pro obě pole je 255.");
-                        return false;
-                    }
-                    return true;
-                };
-                logon.addEventListener("click", async () => {
-                    if (checkFields()) {
-                        const stuff = await fetch("/api/user/login", {
-                            method: "POST",
-                            headers: {
-                                "Username": user.value,
-                                "Password": pass.value
-                            }
-                        }).then((res) => res.json(), (err) => alert("Špatné přihlašovací údaje, nebo účet neexistuje."));
-                        localStorage.setItem("username", stuff.username);
-                        localStorage.setItem("token", stuff.token);
-                        if (stuff.icon_url)
-                            localStorage.setItem("icon_url", stuff.icon_url);
-                        else
-                            localStorage.setItem("icon_url", "https://ui-avatars.com/api/?format=svg&name=" + stuff.username.replaceAll(" ", "+"));
-
-                        location.reload();
-                    }
-                });
-
-                register.addEventListener("click", async () => {
-                    if (checkFields()) {
-                        await fetch("/api/user/login", {
-                            method: "PUT",
-                            headers: {
-                                "Username": user.value,
-                                "Password": pass.value
-                            }
-                        }).then((res) => {
-                            alert("Účet vytvořen, přihlašte se nyní")
-                            location.reload();
-                        }, (err) => alert("Registrace se nezdařila, účet s tímto jménem nejspíš už existuje."));
-                    }
-                });
-            }
-        }
-    } else {
-        document.querySelector("#usri-name").innerHTML = username;
-        document.querySelector("#usri-icon").setAttribute("src", icon);
-        fetch("/api/user/rules", {
-            headers: {
-                "Authorization": "Bearer " + token
-            }
-        }).then(r => r.json()).then(json => {
-            if(json.admin) {
-                document.querySelector(".isAdmin").innerHTML = "<i>Administrátor</i>";
-            }
-        })
-    }
-</script>

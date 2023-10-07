@@ -4,7 +4,7 @@ if (Astro.request.method != "GET")
 
 const query = Astro.url.searchParams.get("q");
 try {
-    const json = await fetch(`https://pixabay.com/api/?key=${import.meta.env.PIXABAY_TOKEN}&q=${query}&image_type=photo&lang=cs`).then(res => res.json());
+    const json = await fetch(`https://pixabay.com/api/?key=${import.meta.env.PIXABAY_TOKEN}&q=${encodeURIComponent(query)}&image_type=photo&lang=cs`).then(res => res.json());
     return new Response(json.hits[0].webformatURL, {headers: {"Cache-Control": "max-age=85000"}}); // about a day
 } catch(err) {
     return new Response("https://http.cat/images/500.jpg");

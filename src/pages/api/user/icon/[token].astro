@@ -1,0 +1,32 @@
+---
+import { getUser } from "../../../../database";
+if (Astro.request.method != "GET") return new Response(undefined, 405);
+
+const { token } = Astro.params;
+if (!token) return new Response(undefined, { status: 400 });
+
+const user = await getUser(token);
+if (!user) return new Response(401);
+async function fetchImage(url) {
+    return await (await fetch(url)).blob();
+}
+
+if (!user.icon_url) {
+    return new Response(
+        await fetchImage(
+            "https://ui-avatars.com/api/?format=svg&name=" +
+                user.username.replaceAll(" ", "+"),
+        ),
+        { headers: { "Content-Type": "image/svg+xml" } },
+    );
+}
+let type = user.icon_url.substring(user.icon_url.lastIndexOf(".") + 1);
+if (type == "jpg") type = "jpeg";
+return new Response(await fetchImage(user.icon_url), {
+    headers: {
+        "Content-Type": "image/" + type,
+    },
+});
+
+
+---

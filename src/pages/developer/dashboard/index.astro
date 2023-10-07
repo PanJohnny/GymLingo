@@ -1,28 +1,37 @@
 ---
+import { isAdmin } from "../../../database";
 import Layout from "../../../layouts/Layout.astro";
+const token = Astro.cookies.get("token");
+if (token && !isAdmin(token.value)) {
+    return Astro.redirect("/?err=401");
+}
 ---
 
 <Layout title="Nástroje administrátora" description="Administrátor">
     <main>
         <div id="form">
             <h1>Vytvořít lekci</h1>
-            Typ:
+             Typ:
             <input type="number" name="" id="type" />
-            Česky:
+             Česky:
             <input type="text" name="" id="czech" />
-            Polsky:
+             Polsky:
             <input type="text" name="" id="polish" />
-            Vysvětlení:
+             Vysvětlení:
             <input type="text" name="" id="explenation" />
-            Skupina:
+             Skupina:
             <input type="text" name="" id="group" />
             <input type="button" value="Odeslat" id="send" />
         </div>
-        <a href="https://app.planetscale.com/devstefancz/gymlingo/main" target="_blank" rel="noopener noreferrer">SQL Databáze</a>
+        <a
+            href="https://app.planetscale.com/devstefancz/gymlingo/main"
+            target="_blank"
+            rel="noopener noreferrer">SQL Databáze</a
+        >
         <div>
             <h1>Lekce</h1>
             <table>
-                <tr>
+                <thead>
                     <th>ID</th>
                     <th>Typ</th>
                     <th>Česky</th>
@@ -30,70 +39,91 @@ import Layout from "../../../layouts/Layout.astro";
                     <th>Vysvětlení</th>
                     <th>Skupina</th>
                     <th>Odstranění</th>
-                </tr>
+                </thead>
             </table>
         </div>
     </main>
 </Layout>
 
-<script>
-    const type: HTMLInputElement = document.querySelector("#type");
-    const czech: HTMLInputElement = document.querySelector("#czech");
-    const explenation: HTMLInputElement =
-        document.querySelector("#explenation");
-    const polish: HTMLInputElement = document.querySelector("#polish");
-    const group: HTMLInputElement = document.querySelector("#group");
-    const send: HTMLInputElement = document.querySelector("#send");
+<script type="module">
+    // @ts-ignore
+    import { getCookie } from "/cookies.js";
+    const type = document.querySelector("#type");
+    const czech = document.querySelector("#czech");
+    const explenation = document.querySelector("#explenation");
+    const polish = document.querySelector("#polish");
+    const group = document.querySelector("#group");
+    const send = document.querySelector("#send");
 
-    send.addEventListener("click", () => {
-        const json = {
-            type: type.value,
-            czech: czech.value,
-            explenation: explenation.value,
-            polish: polish.value,
-            group: group.value,
-        };
+    if (
+        type instanceof HTMLInputElement &&
+        czech instanceof HTMLInputElement &&
+        explenation instanceof HTMLInputElement &&
+        polish instanceof HTMLInputElement &&
+        group instanceof HTMLInputElement
+    ) {
+        send.addEventListener("click", () => {
+            const json = {
+                type: type.value,
+                czech: czech.value,
+                explenation: explenation.value,
+                polish: polish.value,
+                group: group.value,
+            };
 
-        fetch("/api/lesson/create", {
-            method: "PUT",
-            body: JSON.stringify(json),
-            headers: {
-                Authorization: "Bearer " + localStorage.getItem("token"),
-            },
-        }).then(
-            (s) => {
-                alert("Úspěšně vytvořeno");
-                location.reload();
-            },
-            (e) => {
-                alert("Chyba " + e);
-            }
-        );
-    });
-
-    fetch("/api/lesson/get", {
-        headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-        },
-    })
-        .then((res) => res.json())
-        .then((json) => {
-            json.forEach(el => {
-                const row = document.createElement("tr");
-                Object.values(el).forEach(v => {
-                    const td = document.createElement("td");
-                    td.innerText = v + "";
-                    row.appendChild(td);
-                })
-
-                const td = document.createElement("td");
-                td.innerText = "DELETE FROM lessons WHERE id = " + el.id + ";";
-                row.appendChild(td);
-                document.querySelector("table").appendChild(row);
-            });
-        }).catch((err) => {
-            window.location.href = "/?err=401"
+            fetch("/api/lesson/create", {
+                method: "PUT",
+                body: JSON.stringify(json),
+                headers: {
+                    // @ts-ignore
+                    Authorization: "Bearer " + getCookie("token"),
+                },
+            }).then(
+                (s) => {
+                    alert("Úspěšně vytvořeno");
+                    czech.value = "";
+                    polish.value = "";
+                    loadTable();
+                },
+                (e) => {
+                    alert("Chyba " + e);
+                },
+            );
         });
+
+        loadTable();
+    }
+
+    function loadTable() {
+        document.querySelector("table").querySelectorAll("tr[data-generated]").forEach(el => el.remove());
+        fetch("/api/lesson/get", {
+            headers: {
+                // @ts-ignore
+                Authorization: "Bearer " + getCookie("token"),
+            },
+        })
+            .then((res) => res.json())
+            .then((json) => {
+                json.forEach((el) => {
+                    const row = document.createElement("tr");
+                    Object.values(el).forEach((v) => {
+                        const td = document.createElement("td");
+                        td.innerText = v + "";
+                        row.appendChild(td);
+                    });
+
+                    const td = document.createElement("td");
+                    td.innerText =
+                        "DELETE FROM lessons WHERE id = " + el.id + ";";
+                    row.appendChild(td);
+                    row.setAttribute("data-generated", "true");
+                    document.querySelector("table").appendChild(row);
+                });
+            })
+            .catch((err) => {
+                window.location.href = "/?err=401";
+            });
+    }
 </script>
 
 <style is:inline>
