@@ -83,8 +83,12 @@ export async function login(username: string, password: string) {
 }
 
 export async function getIcon(token: string) {
-    // @ts-ignore
-    return (await get(token, "icon_url")).at(0).at(0).icon_url;
+    try {
+        // @ts-ignore
+        return (await get(token, "icon_url")).at(0).at(0).icon_url;
+    } catch (err) {
+        return null;
+    }
 }
 
 export async function setAvatar(token: string, avatar: string) {
@@ -100,36 +104,46 @@ export async function setPassword(token: string, password: string) {
 }
 
 export async function isAdmin(token: string) {
-    // @ts-ignore
-    return (await get(token, "admin")).at(0).at(0).admin;
+    try {
+        // @ts-ignore
+        return (await get(token, "admin")).at(0).at(0).admin;
+    } catch (err) {
+        return null;
+    }
 }
 
 export async function getUser(token: string) {
-    // @ts-ignore
-    return (await get(token, "username, icon_url, admin")).at(0).at(0);
+    try {
+        // @ts-ignore
+        return (await get(token, "username, icon_url, admin")).at(0).at(0);
+    } catch (err) {
+        return null;
+    }
 }
 
 async function get(token: string, key: string) {
+    if (!token)
+        return false;
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
         const el = await connection.promise().query(`SELECT ${key} FROM users WHERE token = UUID_TO_BIN(?)`, token);
         connection.end();
         return el;
     } catch (err) {
-        console.error(err);
         connection.end();
         return false;
     }
 }
 
 async function setString(token: string, key: string, value: string) {
+    if (!token)
+        return false;
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
         await connection.promise().query(`UPDATE users SET ${key} = '${value}' WHERE token = UUID_TO_BIN(?)`, token);
         connection.end();
         return true;
     } catch (err) {
-        console.error(err);
         connection.end();
         return false;
     }
@@ -167,14 +181,18 @@ export async function verifyLesson(token: string, group: string, lesson_id: numb
         connection.end();
         return true;
     } catch (err) {
-        console.error(err);
         connection.end();
         return false;
     }
 }
 
 export async function groupFinished(group: string, token: string) {
-    const user_id = (await get(token, "id")).at(0).at(0).id;
+    const resp = await get(token, "id");
+    if (!resp)
+        return false;
+
+    const user_id = resp.at(0).at(0).id;
+
     if (!user_id)
         return false;
 
@@ -195,8 +213,18 @@ export async function groupFinished(group: string, token: string) {
         connection.end();
         return el.at(0).at(0);
     } catch (err) {
-        console.error(err);
         connection.end();
+        return false;
+    }
+}
+
+export async function isValidToken(token: string) {
+    try {
+        if ((await getUser(token)).username)
+            return true;
+        else
+            return false;
+    } catch (err) {
         return false;
     }
 }

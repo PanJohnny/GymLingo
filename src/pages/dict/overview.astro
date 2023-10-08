@@ -2,10 +2,14 @@
 import UserInfo from "../../components/UserInfo.astro";
 import { groupFinished } from "../../database";
 import Layout from "../../layouts/Layout.astro";
+import {isValidToken} from "../../database"
+
+if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
+    return Astro.redirect("/me/auth/login");
 
 const group = Astro.url.searchParams.get("group");
-if (!group || !Astro.cookies.has("token"))
-    return Astro.redirect("/?err=overview");
+if (!group)
+    return Astro.redirect("/?err=group+overview");
 
 const gf = await groupFinished(group, Astro.cookies.get("token").value);
 ---

@@ -13,24 +13,13 @@ import ApiEndpointDoc from "../../../components/ApiEndpointDoc.astro";
                 <ul class="genEnd"></ul>
             </aside>
         </div>
-        <p>
-            Pokud jste přihlášení můžete si zobrazit svůj token: <code
-                id="token"
-                ><input
-                    type="button"
-                    value="Zobrazit"
-                    onclick="document.qu
-                               ('#token').innerHTML = localStorage.getItem('token');"
-                                    /></code
-            >
-        </p>
         <ApiEndpointDoc
             method="GET"
             endpoint="/api/lesson/group/[group]"
-            description="Poskyte URL obrázku získaného pomocí Pixabay API."
+            description="Poskytne přehled lekcí ve skupině"
             codes={{
                 "200": "Úspěch",
-                "400": "Sepecifikovaná skupina",
+                "400": "Nespecifikovaná skupina",
                 "405": "Nepodporovaná metoda",
             }}
             notes="Místo [group] uveďte název skupiny"
@@ -66,6 +55,24 @@ import ApiEndpointDoc from "../../../components/ApiEndpointDoc.astro";
                 2
             )}
             lang="json"
+        />
+
+        <ApiEndpointDoc
+            method="POST"
+            endpoint="/api/lesson/verify/[group]"
+            description="Ověří zda-li je odpověd správná a uloží záznam do databáze"
+            codes={{
+                "200": "Úspěch",
+                "401": "Špatný token header",
+                "405": "Nepodporovaná metoda",
+            }}
+            searchParams={{
+                id: "identifikátor lekce",
+                polish: "řečení lekce (Polsky)",
+            }}
+            notes="Místo [group] uveďte název skupiny"
+            exampleRequest="/api/lesson/group/animals?id=1&polish=krowa"
+            exampleResponse={"true"}
         />
 
         <ApiEndpointDoc

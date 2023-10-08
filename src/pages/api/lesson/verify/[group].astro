@@ -18,7 +18,7 @@ let token;
 const args = auth.split(" ");
 if (args.length == 2 && args[0] == "Bearer") token = args[1];
 
-if (!token) return new Response(undefined, { status: 400 });
+if (!token) return new Response(undefined, { status: 401 });
 
 return new Response(await verifyLesson(token, group, id, polish) + "", {headers: {
     "Cache-Control": "max-age=85000"

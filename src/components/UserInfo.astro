@@ -1,10 +1,11 @@
 ---
 import { getUser } from "../database";
-// Get token
-const token = Astro.cookies.get("token");
-if (!token) return Astro.redirect("/me/auth/login");
 
-const user = await getUser(token.value);
+const token = Astro.cookies.has("token")?Astro.cookies.get("token").value:undefined;
+
+let user = await getUser(token);
+if (!user)
+    user = {icon_url: undefined, username: "", admin: false}
 ---
 
 <div class="info">

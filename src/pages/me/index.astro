@@ -1,8 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import UserInfo from "../../components/UserInfo.astro";
+import {isValidToken} from "../../database"
 
-if (!Astro.cookies.has("token"))
+if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
     return Astro.redirect("/me/auth/login");
 ---
 
@@ -158,13 +159,29 @@ if (!Astro.cookies.has("token"))
 
     main {
         display: flex;
-        justify-content: center;
-        align-items: center;
         flex-direction: column;
+        margin: 2em;
     }
 
     #icon {
         min-width: 30vw;
         max-width: 50vw;
+    }
+
+    .segment {
+        display: block;
+        margin-bottom: 1em;
+    }
+
+    input {
+        padding: 0.4em;
+        margin: 0.2em;
+        border-radius: 4px;
+        outline: none;
+        border: 1px solid black;
+    }
+
+    input[type="button"] {
+        cursor: pointer;
     }
 </style>

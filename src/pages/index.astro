@@ -2,6 +2,10 @@
 import GroupShowcase from '../components/GroupShowcase.astro';
 import UserInfo from '../components/UserInfo.astro';
 import Layout from '../layouts/Layout.astro';
+import {isValidToken} from "../database"
+
+if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
+    return Astro.redirect("/me/auth/login");
 ---
 
 <Layout title="GymLingo" description="Cool popis">

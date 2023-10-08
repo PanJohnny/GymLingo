@@ -2,23 +2,17 @@
 import UserInfo from "../../components/UserInfo.astro";
 import { getLessonsByGroup } from "../../database";
 import Layout from "../../layouts/Layout.astro";
+import {isValidToken} from "../../database"
+
+if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
+    return Astro.redirect("/me/auth/login");
 
 const group = Astro.url.searchParams.get("g");
 if (!group) {
     return Astro.redirect("/");
 }
 
-let a: string;
-let b: string;
 const lessons = await getLessonsByGroup(group);
-
-if (a) {
-    return Astro.redirect("/?err=fetch+failed&reason=" + encodeURIComponent(a));
-}
-
-if (b) {
-    return Astro.redirect("/?err=json+error&reason=" + encodeURIComponent(b));
-}
 
 if (lessons.length == 0) {
     return Astro.redirect("/?err=group+empty");
