@@ -1,21 +1,24 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import UserInfo from "../../components/UserInfo.astro";
-import {isValidToken} from "../../database"
+import {getUser, isValidToken} from "../../database"
+import Header1 from "../../components/Header1.astro";
 
 if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
     return Astro.redirect("/me/auth/login");
+
+const me = await getUser(Astro.cookies.get("token").value);
 ---
 
-<Layout title="Váš profil" description="Cool desc">
+<Layout title="Váš profil" description="Informace o">
     <header>
         <UserInfo />
         <h1 style="font-size: larger;">Profil</h1>
-        <h1><a href="/">GymLingo</a></h1>
+        <Header1 />
     </header>
     <main>
         <div class="segment">
-            <h1>Ahoj <span id="name"></span></h1>
+            <h1>Ahoj <span id="name">{me.username}</span></h1>
             <img src={"/api/user/icon/"+Astro.cookies.get("token").value} alt="profilový obrázek" id="icon" />
             <div>
                 <input
@@ -31,7 +34,7 @@ if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("toke
             <h2>Upravit údaje</h2>
             <div>
                 <h3>Uživatelské jméno:</h3>
-                <input type="text" name="username" id="username" />
+                <input type="text" name="username" id="username" placeholder={me.username}/>
                 <input type="button" value="Změnit uživatelské jméno" id="usr_change" />
             </div>
             <div>
@@ -60,7 +63,7 @@ if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("toke
             <p>Pokud chcete využívat API této aplikace, zde je váš token: <code id="token"><input type="button" value="Zobrazit" onclick={"document.querySelector('#token').innerHTML = '" + Astro.cookies.get("token").value + "'"}></code></p>
             <p>Token vždy uveďte v headeru: <code>Authorization: Bearer 00000000-0000-0000-0000-000000000000</code></p>
             <p>Plná dokumentace na <a href="/developer/docs" target="_blank">/developer/docs</a></p>
-            <p>Nástroj administrátora <a href="/developer/dashboard" target="_blank">/developer/dashboard</a></p>
+            {me.admin?(<p>Nástroj administrátora <a href="/developer/dashboard" target="_blank">/developer/dashboard</a></p>):undefined}
         </div>
         <div class="segment">
             <h2>Dokumenty</h2>
@@ -73,20 +76,7 @@ if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("toke
     // @ts-ignore
     import {getCookie, deleteAllCookies} from "/cookies.js";
 
-    const username = localStorage.getItem("username");
     const token = getCookie("token");
-
-    const nf = document.querySelector("#name");
-
-    const ui = document.querySelector("#username");
-
-    if (
-        nf instanceof HTMLSpanElement &&
-        ui instanceof HTMLInputElement
-    ) {
-        nf.innerText = username + "";
-        ui.setAttribute("placeholder", username + "");
-    }
 
     const pfp_btn = document.querySelector("#change_pfp");
     const img_url = document.querySelector("#img_url");

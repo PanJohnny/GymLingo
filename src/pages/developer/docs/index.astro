@@ -1,11 +1,14 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import ApiEndpointDoc from "../../../components/ApiEndpointDoc.astro";
+import Header1 from "../../../components/Header1.astro";
 ---
 
 <Layout title="API Dokumentace" description="Dokumentace API pro vývojáře">
     <main>
-        <h1>Dokumentace API</h1>
+        <div class="headings">
+            <Header1 /> <h1>/</h1> <h1>Dokumentace API</h1>
+        </div>
         <div class="endpoints">
             <aside>
                 <a href="/">Domů</a>
@@ -110,6 +113,22 @@ import ApiEndpointDoc from "../../../components/ApiEndpointDoc.astro";
         />
 
         <ApiEndpointDoc
+            method="GET"
+            endpoint="/api/user/icon/[token]"
+            description="Získá ikonu uživatele se specifikovaným tokenem"
+            notes="[token] nahraďte tokenem uživatele"
+            codes={{
+                "200": "Úspěch",
+                "401": "Uživatel nebyl nalezen",
+                "405": "Nepodporovaná metoda",
+            }}
+            headers={{ Username: "Uživatelské jméno", Password: "Heslo" }}
+            exampleRequest="/api/user/icon/00000000-0000-0000-0000-000000000000"
+            exampleResponse={"Obrázek"}
+            lang="text"
+        />
+
+        <ApiEndpointDoc
             method="PUT"
             endpoint="/api/user/login"
             description="Používané pro registraci uživatele."
@@ -189,6 +208,14 @@ import ApiEndpointDoc from "../../../components/ApiEndpointDoc.astro";
             border: 1px solid black;
             border-radius: 2px;
         }
+    }
+
+    .headings {
+        display: inline-flex;
+    }
+
+    .headings > h1 {
+        margin-left: .9em;
     }
 </style>
 

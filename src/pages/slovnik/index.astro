@@ -1,0 +1,50 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getLessons } from "../../database";
+import Header1 from "../../components/Header1.astro";
+
+const lessons = await getLessons();
+if (!lessons) {
+    return new Response(
+        "Nepodařilo se načíst data, za tuto komplikaci se omlouváme. Pokud chyba přetrvává nahlašte ji na GitHubu: https://github.com/PanJohnny/GymLingo/issues nebo mi napište email: janstefanca@seznam.cz",
+    );
+}
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <header>
+        <h2>Přehled slovíček</h2>
+        <Header1 />
+    </header>
+    <main>
+        <p>
+            Tato stránka obsahuje všechny slovíčka uvedena v databázy. Bude nejspíš v budoucnu vymazána, nebo upravena.
+        </p>
+        <ul>
+            {
+                // @ts-ignore
+                lessons.map((lesson) => (
+                    <li>
+                        {lesson.czech} - {lesson.polish}
+                    </li>
+                ))
+            }
+        </ul>
+    </main>
+</Layout>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    main {
+        margin: 2em;
+    }
+
+    :global(main > *) {
+        margin-bottom: 2em;
+    }
+</style>

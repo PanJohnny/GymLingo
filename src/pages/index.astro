@@ -3,16 +3,20 @@ import GroupShowcase from '../components/GroupShowcase.astro';
 import UserInfo from '../components/UserInfo.astro';
 import Layout from '../layouts/Layout.astro';
 import {isValidToken} from "../database"
+import Header1 from '../components/Header1.astro';
 
 if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
     return Astro.redirect("/me/auth/login");
 ---
 
-<Layout title="GymLingo" description="Cool popis">
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
 	<header>
-		<UserInfo /> <h1><a href="/">GymLingo</a></h1>
+		<UserInfo /> <Header1 />
 	</header>
 	<main>
+		<p>
+			Dočasně se přehled všech slovíček nachází <a href="/slovnik">zde</a>
+		</p>
 		<GroupShowcase title="Zvířata" group="animals" image="/boars.jpg" image_desc='Foto <a href="https://pixabay.com/users/webandi-1460261/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2256293">Andreas Lischka</a>'/>
 		<GroupShowcase title="Základní fráze" group="phrases" image="/people.jpg" image_desc='Foto <a href="https://pixabay.com/users/mabelamber-1377835/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3163556">Mabel Amber</a>'/>
 	</main>

@@ -1,11 +1,13 @@
 ---
+import Header1 from "../../../components/Header1.astro";
 import Layout from "../../../layouts/Layout.astro";
 ---
 
-<Layout title="Přihlásit se" description="Přihlašte se do svého profilu">
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <header><Header1 /></header>
     <main>
         <div>
-            <h1>Přihlašte se prosím</h1>
+            <h2>Přihlašte se prosím</h2>
             <p>K používání této aplikace potřebujete účet.</p>
             <div>
                 <input
@@ -109,5 +111,8 @@ import Layout from "../../../layouts/Layout.astro";
     }
     input[type="button"] {
         cursor: pointer;
+    }
+    header {
+        text-align: center;
     }
 </style>

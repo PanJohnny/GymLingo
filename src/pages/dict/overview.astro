@@ -3,6 +3,7 @@ import UserInfo from "../../components/UserInfo.astro";
 import { groupFinished } from "../../database";
 import Layout from "../../layouts/Layout.astro";
 import {isValidToken} from "../../database"
+import Header1 from "../../components/Header1.astro";
 
 if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
     return Astro.redirect("/me/auth/login");
@@ -14,11 +15,11 @@ if (!group)
 const gf = await groupFinished(group, Astro.cookies.get("token").value);
 ---
 
-<Layout title="GymLingo" description="Cool popis">
+<Layout title="Přehled lekce" description="Přehled lekce">
     <header>
         <UserInfo />
-        <h1 style="font-size: larger;">Slovíčka</h1>
-        <h1><a href="/">GymLingo</a></h1>
+        <h2 style="font-size: larger;">Slovíčka</h2>
+        <Header1 />
     </header>
     <main>
         <div class="wow"><h1>{gf.finished + "/" + gf.lessons}</h1>
