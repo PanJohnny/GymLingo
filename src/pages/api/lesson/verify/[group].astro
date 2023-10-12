@@ -20,7 +20,12 @@ if (args.length == 2 && args[0] == "Bearer") token = args[1];
 
 if (!token) return new Response(undefined, { status: 401 });
 
-return new Response(await verifyLesson(token, group, id, polish) + "", {headers: {
+const data = await verifyLesson(token, group, parseInt(id), polish);
+
+return new Response(JSON.stringify(data), {
+    headers: {
     "Cache-Control": "max-age=85000"
-}});
+    },
+    status: data.code
+});
 ---

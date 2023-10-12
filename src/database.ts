@@ -152,18 +152,27 @@ async function setString(token: string, key: string, value: string) {
 export async function verifyLesson(token: string, group: string, lesson_id: number, polish: string) {
     const user_id = (await get(token, "id")).at(0).at(0).id;
     if (lesson_id == null || !user_id)
-        return false;
+        return {
+            success: false,
+            code: 400
+        };
 
     const la = await getLesson(lesson_id);
 
     if (!la || la.length != 1)
-        return false;
+        return {
+            success: false,
+            code: 404
+        };
 
     const lesson = la.at(0);
 
     if (lesson.polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() !=
         polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase())
-        return false;
+        return {
+            success: false,
+            code: 409
+        };
 
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
 
@@ -179,10 +188,16 @@ export async function verifyLesson(token: string, group: string, lesson_id: numb
     )
 `);
         connection.end();
-        return true;
+        return {
+            success: true,
+            lesson: lesson,
+            code: 200
+        };
     } catch (err) {
         connection.end();
-        return false;
+        return {
+            success: false
+        };
     }
 }
 
