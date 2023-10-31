@@ -7,9 +7,13 @@ interface Props {
     image_desc: string;
 }
 
+const isGuest = Astro.cookies.has("guest") && Astro.cookies.get("guest").boolean();
+
 const { title, image, group, image_desc } = Astro.props;
 
-const gf = await groupFinished(group, Astro.cookies.get("token").value);
+let gf;
+if (!isGuest)
+    gf = await groupFinished(group, Astro.cookies.get("token").value);
 ---
 
 <div class="show">
@@ -19,7 +23,7 @@ const gf = await groupFinished(group, Astro.cookies.get("token").value);
         </a>
         <div class="image-desc" aria-hidden="true" set:html={image_desc} />
     </div>
-    <span>{gf.finished + "/" + gf.lessons + " (" + Math.round(gf.ratio * 100) + "%)"}</span>
+    {!isGuest?<span>{gf.finished + "/" + gf.lessons + " (" + Math.round(gf.ratio * 100) + "%)"}</span>:undefined}
     <a href={"/dict?g=" + encodeURIComponent(group)}><h2>{title}</h2></a>
 </div>
 <style>

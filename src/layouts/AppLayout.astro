@@ -1,0 +1,99 @@
+---
+import { ViewTransitions } from "astro:transitions";
+import Header1 from "../components/Header1.astro";
+import UserInfo from "../components/UserInfo.astro";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="title" content="GymLingo" />
+    <meta
+      name="description"
+      content="GymLingo - základy polštiny, vytvořeno v rámci projektů na Gymnáziu Litoměřická"
+    />
+    <meta
+      name="keywords"
+      content="Gymnázium Litoměřická, gymlit, gymlit projekty, polština, student, studentský projekt"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="Jan Štefanča" />
+
+    <title>GymLingo</title>
+
+    <ViewTransitions />
+  </head>
+  <body>
+    <header transition:persist>
+      <UserInfo />
+      <Header1 />
+  </header>
+    <slot />
+  </body><style>
+    :root {
+      font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+        "Lucida Sans", Arial, sans-serif;
+    }
+
+    body {
+      margin-left: 0px;
+    }
+
+    .info {
+      position: relative;
+      bottom: 0px;
+      text-align: center;
+      width: 100%;
+    }
+
+    :global(.zm) {
+      z-index: 0;
+    }
+
+    .info > p {
+      padding: 1em;
+    }
+
+    .icon {
+      position: absolute;
+      height: 4em;
+      width: auto;
+      bottom: 10px;
+      right: 10px;
+    }
+
+    .wrapper {
+      position: relative;
+      bottom: 0px;
+      width: 100%;
+    }
+
+    @media screen and (max-width: 920px) {
+      .icon {
+        display: none;
+      }
+    }
+
+    :global(h1 > a) {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+
+    :global(main) {
+      display: flex;
+      margin: 2em;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+  </style>
+</html>

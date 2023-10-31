@@ -5,7 +5,9 @@ import Layout from '../layouts/Layout.astro';
 import {isValidToken} from "../database"
 import Header1 from '../components/Header1.astro';
 
-if (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value)))
+const isGuest = Astro.cookies.has("guest") && Astro.cookies.get("guest").boolean();
+
+if (!isGuest && (!Astro.cookies.has("token") || ! (await isValidToken(Astro.cookies.get("token").value))))
     return Astro.redirect("/me/auth/login");
 ---
 

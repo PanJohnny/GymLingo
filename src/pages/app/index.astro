@@ -1,0 +1,224 @@
+---
+import { getLessonsByGroup } from "../../database";
+import { isValidToken } from "../../database";
+import AppLayout from "../../layouts/AppLayout.astro";
+import ErrorOverlay from "../../components/ErrorOverlay.astro";
+import FinishedOverlay from "../../components/FinishedOverlay.astro";
+
+let Component = Fragment;
+let ComponentProps = {};
+const err = (tit: string, des: string) => {
+    Component = ErrorOverlay;
+    ComponentProps = { err: tit, description: des };
+};
+
+if (
+    !Astro.cookies.has("token") ||
+    !(await isValidToken(Astro.cookies.get("token").value))
+)
+    return Astro.redirect("/me/auth/login");
+
+const group = Astro.url.searchParams.get("g");
+const index = Astro.url.searchParams.has("i")
+    ? parseInt(Astro.url.searchParams.get("i"))
+    : 0;
+
+let lesson = {
+    czech: "",
+};
+
+let firstImg: any;
+
+if (!Astro.url.searchParams.has("g")) {
+    err(
+        "Neplatná skupina",
+        "Parametr 'g' musí být specifikován, aby mohla být spuštěna aplikace",
+    );
+} else {
+    const lessons = await getLessonsByGroup(group);
+
+    if (lessons.length == 0) {
+        err(
+            "Prázdná skupina",
+            "Tato skupina cvičení existuje, ale nic v ní není :(",
+        );
+    } else {
+        const l = lessons[index];
+
+        if (!l) {
+            Component = FinishedOverlay;
+            ComponentProps = {
+                title: lessons[0].group,
+                description: "Gratulujeme!",
+            };
+            
+        } else {
+            lesson = l;
+            firstImg = await (
+                await fetch(
+                    Astro.url.origin +
+                        "/api/image?q=" +
+                        encodeURI(lesson.czech),
+                )
+            ).text();
+        }
+    }
+}
+---
+
+<AppLayout>
+    <head>
+        <link rel="preload" as="image" href={firstImg} />
+    </head>
+    <Component {...ComponentProps} />
+
+    <main transition:animate="slide">
+        <h2>Přeložte slovo</h2>
+        <div>
+            <span class="floating-segment">{lesson.czech}</span>
+            <input type="text" id="answer" class="floating-segment"/>
+        </div>
+        <img src={firstImg} aria-hidden="true" loading="eager" />
+        <a href={"?g=" + group + "&i=" + (index + 1)}>Další</a>
+    </main>
+
+    <footer>
+        <div class="correct" hidden>
+            <h3>Správně</h3>
+            <p class="explanation"></p>
+            <input type="button" value="➡" class="next" onclick={"location.href='" + "?g=" + group + "&i=" + (index + 1) + "'"}/>
+        </div>
+
+        <div class="incorrect" hidden>
+            <h3>Špatně</h3>
+            <p>Zkus to znovu, nebo kliknutím na otazník přeskoč otázku</p>
+        </div>
+
+        <div class="idk" hidden>
+            <h3>Nevadí!</h3>
+            <p class="explanation">Popdívejte se do slovíček</p>
+            <input type="button" value="➡" class="next" />
+        </div>
+    </footer>
+</AppLayout>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .task {
+        font-size: 3rem;
+    }
+
+    .floating-segment {
+        background-color: lightcyan;
+        width: fit-content;
+        padding: 0.3em;
+        border: 1px solid black;
+        border-radius: 12px;
+        font-size: larger;
+    }
+
+    .container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 2em;
+        margin: 2em;
+        margin-top: 0em;
+    }
+
+    .answer {
+        justify-content: end;
+        width: 50%;
+    }
+
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    footer {
+        position: fixed;
+        bottom: -10px;
+        border-radius: 12px;
+        width: 100%;
+    }
+
+    .idk {
+        background-color: orangered;
+    }
+
+    .incorrect {
+        background-color: red;
+        color: white;
+    }
+
+    footer > div {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        flex-direction: column;
+    }
+
+    footer {
+        z-index: 1;
+    }
+
+    .image {
+        border-radius: 12px;
+        max-width: 80vw;
+        height: auto;
+    }
+
+    p {
+        margin-top: 0px;
+    }
+
+    .next {
+        position: absolute;
+        right: 10px;
+        padding: 0.5em;
+        font-size: larger;
+        outline: none;
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .help {
+        padding: 0.5em;
+        font-size: larger;
+        outline: none;
+        border: none;
+        background: none;
+        cursor: pointer;
+        width: min-content;
+    }
+
+    .next:focus {
+        font-weight: 1000;
+    }
+
+    .correct {
+        background-color: greenyellow;
+    }
+
+    [hidden] {
+        display: none !important;
+    }
+
+    [disabled] {
+        filter: grayscale(1);
+    }
+
+    img {
+        border-radius: 12px;
+    }
+</style>
