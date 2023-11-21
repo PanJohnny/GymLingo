@@ -140,11 +140,12 @@ async function setString(token: string, key: string, value: string) {
         return false;
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
     try {
-        await connection.promise().query(`UPDATE users SET ${key} = '${value}' WHERE token = UUID_TO_BIN(?)`, token);
+        await connection.promise().query(`UPDATE users SET ${key} = ? WHERE token = UUID_TO_BIN(?)`, [value, token]);
         connection.end();
         return true;
     } catch (err) {
         connection.end();
+        console.log(err);
         return false;
     }
 }

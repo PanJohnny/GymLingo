@@ -9,7 +9,8 @@
     "dev": "astro dev --port 3000",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "check": "astro check"
   },
   "devDependencies": {
     "@astrojs/vercel": "^5.0.1",
@@ -17,10 +18,12 @@
     "astro": "^3.1.1"
   },
   "dependencies": {
+    "@astrojs/check": "^0.3.1",
     "@astrojs/markdown-component": "^1.0.5",
     "astro-webmanifest": "^1.0.0",
     "highlight.js": "^11.8.0",
     "mysql2": "^3.6.1",
+    "typescript": "^5.2.2",
     "util": "^0.12.5"
   }
 }

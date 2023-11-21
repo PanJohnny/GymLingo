@@ -1,13 +1,11 @@
 ---
-import { getLessonsByGroup } from "../../database";
-import { isValidToken } from "../../database";
+import { getLessonsByGroup, isValidToken } from "../../database";
 import AppLayout from "../../layouts/AppLayout.astro";
 import ErrorOverlay from "../../components/ErrorOverlay.astro";
 import FinishedOverlay from "../../components/FinishedOverlay.astro";
-
 let Component = Fragment;
 let ComponentProps = {};
-const err = (tit: string, des: string) => {
+const err = (tit, des) => {
     Component = ErrorOverlay;
     ComponentProps = { err: tit, description: des };
 };
@@ -25,6 +23,11 @@ const index = Astro.url.searchParams.has("i")
 
 let lesson = {
     czech: "",
+    polish: "",
+    group: "",
+    id: "",
+    explanation: "",
+    type: "",
 };
 
 let firstImg: any;
@@ -33,6 +36,14 @@ if (!Astro.url.searchParams.has("g")) {
     err(
         "Neplatná skupina",
         "Parametr 'g' musí být specifikován, aby mohla být spuštěna aplikace",
+    );
+} else if (
+    Astro.url.searchParams.has("etitle") &&
+    Astro.url.searchParams.has("edescription")
+) {
+    err(
+        Astro.url.searchParams.get("etitle"),
+        Astro.url.searchParams.get("edescription"),
     );
 } else {
     const lessons = await getLessonsByGroup(group);
@@ -51,56 +62,325 @@ if (!Astro.url.searchParams.has("g")) {
                 title: lessons[0].group,
                 description: "Gratulujeme!",
             };
-            
         } else {
             lesson = l;
             firstImg = await (
                 await fetch(
                     Astro.url.origin +
                         "/api/image?q=" +
-                        encodeURI(lesson.czech),
+                        encodeURI(
+                            lesson.czech.includes(";")
+                                ? lesson.czech.split(";")[0]
+                                : lesson.czech,
+                        ),
                 )
             ).text();
         }
     }
 }
+
+function shuffle(array) {
+    let currentIndex = array.length,
+        randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex > 0) {
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex],
+            array[currentIndex],
+        ];
+    }
+
+    return array;
+}
 ---
 
 <AppLayout>
-    <head>
-        <link rel="preload" as="image" href={firstImg} />
-    </head>
     <Component {...ComponentProps} />
+    <div
+        id="data"
+        data-group={lesson.group}
+        data-id={lesson.id}
+        data-type={lesson.type}
+    >
+    </div>
 
     <main transition:animate="slide">
-        <h2>Přeložte slovo</h2>
-        <div>
-            <span class="floating-segment">{lesson.czech}</span>
-            <input type="text" id="answer" class="floating-segment"/>
+        <div id="input">
+            <div class="segment" hidden={lesson.type != "1"}>
+                <h2>Přeložte slovo</h2>
+                <div class="translate">
+                    <span class="floating-segment">{lesson.czech}</span>
+
+                    <input type="text" id="answer" class="floating-segment" />
+                </div>
+                <img src={firstImg} aria-hidden="true" loading="eager" />
+            </div>
+            <div class="segment" hidden={lesson.type != " 2"}>
+                <h2>Přiřaďte správný překlad ke slovům</h2>
+                <div class="flex">
+                    <div class="left">
+                        <h3>Česky</h3>
+                        {
+                            lesson.type == "2"
+                                ? lesson.czech.split(";").map((t) => (
+                                      <div data-czech={t}>
+                                          {t}:{" "}
+                                          <span
+                                              class="answerbox"
+                                              id={encodeURIComponent("c" + t)}
+                                          />
+                                      </div>
+                                  ))
+                                : undefined
+                        }
+                    </div>
+                    <div class="right" id="elementsForFree">
+                        <h3>Polsky</h3>
+                        {
+                            lesson.type == "2"
+                                ? shuffle(lesson.polish.split(";")).map((t) => (
+                                      <div
+                                          class="floating-segment drag"
+                                          id={encodeURIComponent("p" + t)}
+                                      >
+                                          {t}
+                                      </div>
+                                  ))
+                                : undefined
+                        }
+                    </div>
+                    <div>
+                        <h3>Zkontrolovat</h3>
+                        <input
+                            type="button"
+                            value="✔"
+                            class="submit"
+                            title="Zkontrolovat"
+                        />
+                    </div>
+                </div>
+                <img src={firstImg} aria-hidden="true" loading="eager" />
+            </div>
         </div>
-        <img src={firstImg} aria-hidden="true" loading="eager" />
-        <a href={"?g=" + group + "&i=" + (index + 1)}>Další</a>
+
+        <input type="button" value="Nevím" class="help" />
     </main>
 
     <footer>
         <div class="correct" hidden>
             <h3>Správně</h3>
-            <p class="explanation"></p>
-            <input type="button" value="➡" class="next" onclick={"location.href='" + "?g=" + group + "&i=" + (index + 1) + "'"}/>
+            <p class="explanation">{lesson.explanation}</p>
+            <a
+                role="button"
+                title="další úloha"
+                class="next"
+                href={"?g=" + group + "&i=" + (index + 1)}>➡</a
+            >
         </div>
 
         <div class="incorrect" hidden>
             <h3>Špatně</h3>
-            <p>Zkus to znovu, nebo kliknutím na otazník přeskoč otázku</p>
+            <p>Zkus to znovu, nebo přeskoč otázku</p>
+            <a
+                role="button"
+                title="další úloha"
+                class="next"
+                href={"?g=" + group + "&i=" + (index + 1)}>➡</a
+            >
         </div>
 
         <div class="idk" hidden>
             <h3>Nevadí!</h3>
-            <p class="explanation">Popdívejte se do slovíček</p>
-            <input type="button" value="➡" class="next" />
+            <p class="explanation">
+                {lesson.czech} se polsky řekne {lesson.polish}
+            </p>
+            <a
+                role="button"
+                title="další úloha"
+                class="next"
+                href={"?g=" + group + "&i=" + (index + 1)}>➡</a
+            >
         </div>
     </footer>
 </AppLayout>
+
+<script>
+    // @ts-ignore
+    import { getCookie } from "../../util/cookies";
+
+    document.addEventListener("astro:page-load", () => {
+        const answer: HTMLInputElement = document.querySelector("#answer");
+        const datae: HTMLDivElement = document.querySelector("#data");
+        const inputArea: HTMLDivElement = document.querySelector("#input");
+        let data;
+        try {
+            data = datae.dataset;
+        } catch (err) {
+            if (!location.search.includes("etitle"))
+                location.search +=
+                    "&etitle=" +
+                    encodeURIComponent("Nepodařilo se načíst úlohu") +
+                    "&edescription=" +
+                    encodeURIComponent(err) +
+                    "&eraw=" +
+                    encodeURIComponent(err);
+        }
+
+        if (data) {
+            answer.focus();
+            const help: HTMLInputElement = document.querySelector(".help");
+            const idk: HTMLDivElement = document.querySelector("footer > .idk");
+            const c: HTMLDivElement =
+                document.querySelector("footer > .correct");
+            const i: HTMLDivElement = document.querySelector(
+                "footer > .incorrect",
+            );
+
+            if (data.type == 1) {
+                answer.addEventListener("keyup", async (e) => {
+                    if (e.key == "Enter") {
+                        checkValue(answer.value);
+                    } else if (answer.classList.contains("incorrect")) {
+                        answer.classList.remove("incorrect");
+                    }
+                });
+            } else if (data.type == 2) {
+                const submit: HTMLInputElement =
+                    document.querySelector(".submit");
+                submit.addEventListener("click", () => {
+                    const a = Object.values(
+                        document.querySelectorAll(".answerbox"),
+                    )
+                        .map((answer: HTMLDivElement) =>
+                            answer.innerText.trim().toLowerCase(),
+                        )
+                        .join(";");
+                    checkValue(a);
+                });
+            }
+
+            async function checkValue(value) {
+                const request = await fetch(
+                    `/api/lesson/verify/${data.group}?id=${
+                        data.id
+                    }&polish=${encodeURIComponent(value)}`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${getCookie("token")}`,
+                        },
+                    },
+                ).then((r) => r.json());
+
+                if (request.success == true) {
+                    c.hidden = false;
+                    i.hidden = true;
+                    idk.hidden = true;
+                    answer.classList.add("correct");
+                    help.hidden = true;
+
+                    speakAnswer();
+                    document
+                        .querySelectorAll(".next")
+                        .forEach((btn: HTMLAnchorElement) => {
+                            if (btn.checkVisibility()) {
+                                btn.focus();
+                            }
+                        });
+
+                    const explain: HTMLParagraphElement =
+                        c.querySelector(".explanation");
+
+                    explain.innerText = request.lesson.explanation;
+                    answer.value = request.lesson.polish;
+                } else {
+                    c.hidden = true;
+                    i.hidden = false;
+                    idk.hidden = true;
+                    answer.classList.add("incorrect");
+                }
+            }
+
+            help.addEventListener("click", async (e) => {
+                // left click
+                if (e.button == 0) {
+                    c.hidden = true;
+                    i.hidden = true;
+                    idk.hidden = false;
+
+                    inputArea.setAttribute("disabled", "true");
+                    speakAnswer();
+                    document
+                        .querySelectorAll(".next")
+                        .forEach((btn: HTMLInputElement) => {
+                            if (btn.checkVisibility()) {
+                                btn.focus();
+                            }
+                        });
+                }
+            });
+
+            let voice;
+            function loadSpeechSynthesis() {
+                let voices = window.speechSynthesis.getVoices();
+                voice = voices.find((v) => v.lang == "pl-PL");
+            }
+
+            function speakAnswer() {
+                if (voice && !speechSynthesis.speaking) {
+                    const utterance = new SpeechSynthesisUtterance(data.polish);
+                    utterance.voice = voice;
+                    utterance.rate = 0.75;
+                    speechSynthesis.speak(utterance);
+                }
+            }
+
+            if (window.speechSynthesis) {
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = loadSpeechSynthesis;
+                }
+
+                loadSpeechSynthesis();
+            }
+        }
+
+        document.querySelectorAll(".drag").forEach((el: HTMLDivElement) => {
+            el.draggable = true;
+            el.ondragstart = drag;
+        });
+
+        document
+            .querySelectorAll(".answerbox")
+            .forEach((el: HTMLDivElement) => {
+                el.ondrop = (ev) => {
+                    ev.preventDefault();
+
+                    var data = ev.dataTransfer.getData("text");
+                    var parent = ev.dataTransfer.getData("srcParent");
+                    if (el.children.length != 0) {
+                        const first = el.firstChild;
+                        el.removeChild(first);
+                        document.getElementById(parent).appendChild(first);
+                    }
+                    el.appendChild(document.getElementById(data));
+                };
+                el.ondragover = (ev) => {
+                    ev.preventDefault();
+                };
+            });
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+            ev.dataTransfer.setData("srcParent", ev.target.parentElement.id);
+        }
+    });
+</script>
 
 <style>
     header {
@@ -133,6 +413,30 @@ if (!Astro.url.searchParams.has("g")) {
     .answer {
         justify-content: end;
         width: 50%;
+    }
+
+    .answerbox {
+        display: inline-block;
+        min-width: 3em;
+        min-height: 1em;
+        border: 1px solid black;
+        border-radius: 10px;
+    }
+
+    .left {
+        font-size: larger;
+    }
+
+    .flex {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 1em;
+    }
+
+    .drag {
+        cursor: move;
+        user-select: none;
     }
 
     main {
@@ -190,6 +494,8 @@ if (!Astro.url.searchParams.has("g")) {
         border: none;
         background: none;
         cursor: pointer;
+        text-decoration: none;
+        color: inherit;
     }
 
     .help {
@@ -200,6 +506,7 @@ if (!Astro.url.searchParams.has("g")) {
         background: none;
         cursor: pointer;
         width: min-content;
+        text-decoration: underline orangered;
     }
 
     .next:focus {
@@ -216,9 +523,24 @@ if (!Astro.url.searchParams.has("g")) {
 
     [disabled] {
         filter: grayscale(1);
+        pointer-events: none;
     }
 
     img {
         border-radius: 12px;
+    }
+
+    .translate {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 1em;
+    }
+
+    .submit {
+        background-color: white;
+        color: black;
+        border-radius: 12px;
+        font-size: 3em;
     }
 </style>

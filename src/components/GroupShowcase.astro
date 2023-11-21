@@ -18,13 +18,13 @@ if (!isGuest)
 
 <div class="show">
     <div class="image-wrapper">
-        <a href={"/dict?g=" + encodeURIComponent(group)}>
+        <a href={"/app?g=" + encodeURIComponent(group)}>
             <img src={image} aria-hidden="true" />
         </a>
         <div class="image-desc" aria-hidden="true" set:html={image_desc} />
     </div>
     {!isGuest?<span>{gf.finished + "/" + gf.lessons + " (" + Math.round(gf.ratio * 100) + "%)"}</span>:undefined}
-    <a href={"/dict?g=" + encodeURIComponent(group)}><h2>{title}</h2></a>
+    <a href={"/app?g=" + encodeURIComponent(group)}><h2>{title}</h2></a>
 </div>
 <style>
     img {

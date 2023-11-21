@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+import gymlit from "../images/gymlit.png";
 import { ViewTransitions } from "astro:transitions";
 import Header1 from "../components/Header1.astro";
 import UserInfo from "../components/UserInfo.astro";
@@ -10,6 +12,7 @@ import UserInfo from "../components/UserInfo.astro";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="title" content="GymLingo" />
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml"/>
     <meta
       name="description"
       content="GymLingo - základy polštiny, vytvořeno v rámci projektů na Gymnáziu Litoměřická"
@@ -21,6 +24,13 @@ import UserInfo from "../components/UserInfo.astro";
     <meta name="robots" content="index, follow" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="author" content="Jan Štefanča" />
+    <meta name="description" content="GymLingo je webová aplikace vytvořena jako školní projekt. Slouží k naučení základních frází a slovíček polštiny." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://gymlingo.vercel.app" />
+    <meta property="og:title" content="GymLingo - základní polské fráze" />
+    <meta property="og:description" content="GymLingo je webová aplikace vytvořena jako školní projekt. Slouží k naučení základních frází a slovíček polštiny." />
 
     <title>GymLingo</title>
 
@@ -30,9 +40,37 @@ import UserInfo from "../components/UserInfo.astro";
     <header transition:persist>
       <UserInfo />
       <Header1 />
-  </header>
+    </header>
     <slot />
-  </body><style>
+    <footer>
+      <div class:list={["info", "zm"]}>
+        <p>
+          Vytvořil <a
+            href="https://github.com/PanJohnny"
+            target="_blank"
+            rel="noopener noreferrer">Jan Štefanča</a
+          > v rámci projektů na <a
+            href="https://www.gymlit.cz"
+            target="_blank"
+            rel="noopener noreferrer">Gymnáziu Litoměřická</a
+          >. Zdrojový kód na <a
+            href="https://github.com/PanJohnny/GymLingo"
+            target="_blank"
+            rel="noopener noreferrer">GitHubu</a
+          >.
+        </p>
+      </div>
+      <a href="https://www.gymlit.cz" target="_blank" rel="noopener noreferrer"
+        ><Image
+          src={gymlit}
+          alt="logo gymnázia Litoměřická"
+          class:list={["icon", "zm"]}
+        /></a
+      >
+    </footer></body
+  >
+
+  <style>
     :root {
       font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
         "Lucida Sans", Arial, sans-serif;
