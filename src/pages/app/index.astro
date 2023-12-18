@@ -50,8 +50,8 @@ if (!Astro.url.searchParams.has("g")) {
 
     if (lessons.length == 0) {
         err(
-            "Prázdná skupina",
-            "Tato skupina cvičení existuje, ale nic v ní není :(",
+            "Cvičení neexistuje",
+            "Skupina cvičení neexistuje :(",
         );
     } else {
         const l = lessons[index];
@@ -98,6 +98,8 @@ function shuffle(array) {
 
     return array;
 }
+
+const nextLink = "?g=" + group + "&i=" + (index + 1);
 ---
 
 <AppLayout>
@@ -180,7 +182,7 @@ function shuffle(array) {
                 role="button"
                 title="další úloha"
                 class="next"
-                href={"?g=" + group + "&i=" + (index + 1)}>➡</a
+                href={nextLink}>➡</a
             >
         </div>
 
@@ -191,7 +193,7 @@ function shuffle(array) {
                 role="button"
                 title="další úloha"
                 class="next"
-                href={"?g=" + group + "&i=" + (index + 1)}>➡</a
+                href={nextLink}>➡</a
             >
         </div>
 
@@ -204,7 +206,7 @@ function shuffle(array) {
                 role="button"
                 title="další úloha"
                 class="next"
-                href={"?g=" + group + "&i=" + (index + 1)}>➡</a
+                href={nextLink}>➡</a
             >
         </div>
     </footer>
@@ -353,6 +355,46 @@ function shuffle(array) {
         document.querySelectorAll(".drag").forEach((el: HTMLDivElement) => {
             el.draggable = true;
             el.ondragstart = drag;
+
+            // Phone dragging
+            el.addEventListener("touchmove", function (e) {
+                // grab the location of touch
+                var touchLocation = e.targetTouches[0];
+
+                // assign box new coordinates based on the touch.
+                el.style.left = touchLocation.pageX + -10 + "px";
+                el.style.top = touchLocation.pageY + -10 + "px";
+                el.style.position = "absolute";
+                document.body.style.overflow = "hidden";
+                console.log("touch");
+            });
+
+            el.addEventListener("touchend", function (e) {
+                // go through drop spots
+                const box = Object.values(
+                    document.querySelectorAll(".answerbox"),
+                ).find((e) => {
+                    const box = e.getBoundingClientRect();
+                    const box2 = el.getBoundingClientRect();
+                    console.log(box);
+                    return (
+                        box2.left >= box.left - box2.width&&
+                        box2.right >= box.right  &&
+                        box2.bottom  >= box.bottom &&
+                        box2.top >= box.top - box2.height
+                    );
+                });
+
+                console.log(box);
+
+                el.style.position = "relative";
+                el.style.left = "auto";
+                el.style.top = "auto";
+
+                if (box) {
+                    box.appendChild(el);
+                }
+            });
         });
 
         document
@@ -528,6 +570,7 @@ function shuffle(array) {
 
     img {
         border-radius: 12px;
+        max-width: 90vw;
     }
 
     .translate {

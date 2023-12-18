@@ -12,7 +12,7 @@ import UserInfo from "../components/UserInfo.astro";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="title" content="GymLingo" />
-    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml"/>
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
     <meta
       name="description"
       content="GymLingo - základy polštiny, vytvořeno v rámci projektů na Gymnáziu Litoměřická"
@@ -24,13 +24,19 @@ import UserInfo from "../components/UserInfo.astro";
     <meta name="robots" content="index, follow" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="author" content="Jan Štefanča" />
-    <meta name="description" content="GymLingo je webová aplikace vytvořena jako školní projekt. Slouží k naučení základních frází a slovíček polštiny." />
+    <meta
+      name="description"
+      content="GymLingo je webová aplikace vytvořena jako školní projekt. Slouží k naučení základních frází a slovíček polštiny."
+    />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://gymlingo.vercel.app" />
     <meta property="og:title" content="GymLingo - základní polské fráze" />
-    <meta property="og:description" content="GymLingo je webová aplikace vytvořena jako školní projekt. Slouží k naučení základních frází a slovíček polštiny." />
+    <meta
+      property="og:description"
+      content="GymLingo je webová aplikace vytvořena jako školní projekt. Slouží k naučení základních frází a slovíček polštiny."
+    />
 
     <title>GymLingo</title>
 
@@ -43,8 +49,8 @@ import UserInfo from "../components/UserInfo.astro";
     </header>
     <slot />
     <footer>
-      <div class:list={["info", "zm"]}>
-        <p>
+      <div class="footer-container">
+        <div class:list={["info", "zm"]}>
           Vytvořil <a
             href="https://github.com/PanJohnny"
             target="_blank"
@@ -58,15 +64,18 @@ import UserInfo from "../components/UserInfo.astro";
             target="_blank"
             rel="noopener noreferrer">GitHubu</a
           >.
-        </p>
+        </div>
+        <a
+          href="https://www.gymlit.cz"
+          target="_blank"
+          rel="noopener noreferrer"
+          ><Image
+            src={gymlit}
+            alt="logo gymnázia Litoměřická"
+            class:list={["zm", "icon"]}
+          /></a
+        >
       </div>
-      <a href="https://www.gymlit.cz" target="_blank" rel="noopener noreferrer"
-        ><Image
-          src={gymlit}
-          alt="logo gymnázia Litoměřická"
-          class:list={["icon", "zm"]}
-        /></a
-      >
     </footer></body
   >
 
@@ -81,26 +90,23 @@ import UserInfo from "../components/UserInfo.astro";
     }
 
     .info {
-      position: relative;
-      bottom: 0px;
       text-align: center;
-      width: 100%;
     }
 
     :global(.zm) {
       z-index: 0;
     }
 
-    .info > p {
+    .info {
       padding: 1em;
+      display: block;
     }
 
     .icon {
-      position: absolute;
       height: 4em;
       width: auto;
-      bottom: 10px;
-      right: 10px;
+      float: inline-end;
+      transform: translateY(-4em);
     }
 
     .wrapper {
@@ -132,6 +138,13 @@ import UserInfo from "../components/UserInfo.astro";
       align-items: center;
       justify-content: center;
       flex-direction: column;
+    }
+
+    .footer-container {
+      display: block;
+      bottom: 0px;
+      width: 100%;
+      text-align: center;
     }
   </style>
 </html>
