@@ -1,0 +1,27 @@
+---
+import { response } from "../../../../util/response";
+import { connect } from "../../../../util/database";
+// POST /api/v2/auth/login
+// {username, password}
+if (Astro.request.method != "POST") return response.methodNotAllowed;
+
+try {
+    const json = await Astro.request.json();
+    console.log(json);
+    console.log(json.username);
+    console.log(json.password);
+    
+    
+    
+    if (!json.hasOwnProperty("username") || !json.hasOwnProperty("password")) {   
+        console.log("BAD REQuest");
+         
+        return response.badRequest;
+    }
+
+    const login = await connect().login(json.username, json.password);
+    return response.generic(login, 401);
+} catch (err) {
+    return response.err(err);
+}
+---

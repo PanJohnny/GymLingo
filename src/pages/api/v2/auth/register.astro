@@ -1,0 +1,19 @@
+---
+import { response } from "../../../../util/response";
+import { connect } from "../../../../util/database";
+// POST /api/v2/auth/register
+// {username, password}
+if (Astro.request.method != "POST") return response.methodNotAllowed;
+
+try {
+    const json = await Astro.request.json();
+    if (!json.username || !json.password) {
+        return response.badRequest;
+    }
+
+    const login = await connect().register(json.username, json.password);
+    return response.generic(login, 401);
+} catch (err) {
+    return response.badRequest;
+}
+---

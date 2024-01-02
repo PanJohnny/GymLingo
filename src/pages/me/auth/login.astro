@@ -37,10 +37,16 @@ import Layout from "../../../layouts/Layout.astro";
                 >
             </p>
             <p>
-                Pokud si nechcete tvořit účet tak se můžete pokračovat jako host, tuto možnost nedoporučuji, protože neumožňuje ukládání postupu napříč zařízeními a další personalizaci.
+                Pokud si nechcete tvořit účet tak se můžete pokračovat jako
+                host, tuto možnost nedoporučuji, protože neumožňuje ukládání
+                postupu napříč zařízeními a další personalizaci.
             </p>
             <div>
-                <input type="button" value="Přihlásit se jako host" id="guest">
+                <input
+                    type="button"
+                    value="Přihlásit se jako host"
+                    id="guest"
+                />
             </div>
         </div>
     </main>
@@ -80,12 +86,16 @@ import Layout from "../../../layouts/Layout.astro";
     ) {
         logon.addEventListener("click", async () => {
             if (checkFields()) {
-                const stuff = await fetch("/api/user/login", {
+                const stuff = await fetch("/api/v2/auth/login", {
                     method: "POST",
                     headers: {
-                        Username: user.value,
-                        Password: pass.value,
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
                     },
+                    body: JSON.stringify({
+                        username: user.value,
+                        password: pass.value,
+                    }),
                 }).then((res) => {
                     if (res.status != 200) {
                         window.alert(
@@ -105,7 +115,7 @@ import Layout from "../../../layouts/Layout.astro";
         guest.addEventListener("click", async () => {
             setCookie("guest", true, 1);
             location.href = "/";
-        })
+        });
     }
 </script>
 

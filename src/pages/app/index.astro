@@ -267,7 +267,7 @@ function shuffle(array) {
 
             async function checkValue(value) {
                 const request = await fetch(
-                    `/api/lesson/verify/${data.group}?id=${
+                    `/api/v2/lesson/verify/${data.group}?id=${
                         data.id
                     }&polish=${encodeURIComponent(value)}`,
                     {

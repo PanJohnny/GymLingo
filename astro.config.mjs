@@ -10,5 +10,5 @@ export default defineConfig({
   integrations: [webmanifest({
     name: "GymLingo",
     lang: "cz"
-  })]
+  })],
 });
