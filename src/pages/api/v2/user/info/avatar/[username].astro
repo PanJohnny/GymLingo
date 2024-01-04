@@ -1,0 +1,41 @@
+---
+import { connect } from "../../../../../../util/database";
+if (Astro.request.method != "GET") return new Response(undefined, 405);
+
+const { username } = Astro.params;
+if (!username) return new Response(undefined, { status: 400 });
+
+const { getAvatarByUsername } = connect();
+
+const avatar = await getAvatarByUsername(username);
+if (!avatar.success) {
+    return new Response(undefined, {status: 404});
+}
+if (!avatar.avatar)
+    return new Response(
+        await fetchImage(
+            "https://ui-avatars.com/api/?format=svg&name=" +
+                username.replaceAll(" ", "+"),
+        ),
+        { headers: { "Content-Type": "image/svg+xml" }, status: 206},
+    );
+
+async function fetchImage(url: string) {
+    return await (await fetch(url)).blob();
+}
+
+let type = avatar.avatar.substring(avatar.avatar.lastIndexOf(".") + 1);
+if (type == "jpg") type = "jpeg";
+
+let img = await fetchImage(avatar.avatar);
+
+if (img.size == 0) {
+    img = await fetchImage("https://http.cat/404");
+}
+return new Response(img, {
+    headers: {
+        "Content-Type": "image/" + type,
+    },
+    status: img.size == 0?410:200
+});
+---

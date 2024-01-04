@@ -1,6 +1,4 @@
 ---
-import { Image } from "astro:assets";
-import gymlit from "../images/gymlit.png";
 interface Props {
   title: string;
   description: string;
@@ -46,8 +44,8 @@ const { title, description } = Astro.props as Props;
         </p>
       </div>
       <a href="https://www.gymlit.cz" target="_blank" rel="noopener noreferrer"
-        ><Image
-          src={gymlit}
+        ><img
+          src={"/gymlit.png"}
           alt="logo gymnázia Litoměřická"
           class:list={["icon", "zm"]}
         /></a

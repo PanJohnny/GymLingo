@@ -67,7 +67,7 @@ if (!Astro.url.searchParams.has("g")) {
             firstImg = await (
                 await fetch(
                     Astro.url.origin +
-                        "/api/image?q=" +
+                        "/api/v2/image?q=" +
                         encodeURI(
                             lesson.czech.includes(";")
                                 ? lesson.czech.split(";")[0]

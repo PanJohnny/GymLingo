@@ -1,0 +1,28 @@
+---
+import {connect} from "../../../../../../util/database";
+if (Astro.request.method != "POST")
+    return new Response(undefined, {status: 405});
+
+const auth = Astro.request.headers.get("Authorization");
+const url = Astro.url.searchParams.get("url");
+if (!url || !/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/g.test(url))
+    return new Response(undefined, {status: 400});
+
+if (auth) {
+    const args = auth.split(" ");
+    if (args.length == 2 && args[0] == "Bearer") {
+        const token = args[1];
+        if (/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g.test(token)) {
+            const {updateAvatarByToken} = connect();
+            const response = await updateAvatarByToken(token, url);
+            if (response.success) {
+                return new Response(response, {status: 200});
+            } else {
+                return new Response(response, {status: 401});
+            }
+        }
+    }
+} else {
+    return new Response(undefined, {status: 401});
+}
+---

@@ -1,12 +1,34 @@
 import * as mysql from "mysql2";
 import bcrypt from "bcryptjs";
 
-async function hash(val: string) {
-    return await bcrypt.hash(val, 10);
+/**
+ * Hashes the value with 8 salt cycles.
+ */
+function hash(val: string) {
+    return new Promise((resolve, reject) => {
+        bcrypt.hash(val, 8, function (err, hash) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(hash);
+            }
+        });
+    });
 }
 
-async function compare(val1: string, val2: string) {
-    return await bcrypt.compare(val1, val2);
+/**
+ * The promise resolves either boolean or fails.
+ */
+function compare(value: string, hashed: string) {
+    return new Promise((resolve, reject) => {
+        bcrypt.compare(value, hashed, function (err, res) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        });
+    });
 }
 
 const tokenValidityPeriod = 4 * 60 * 60 * 1000; // 4 hours in milliseconds
@@ -43,7 +65,7 @@ export const connect = () => {
 
     const self = {
         login: async (username: string, password: string) => {
-            const userQuery = (await connection.promise().query(`SELECT username, password, icon_url FROM users WHERE username = ?`, [username]))[0][0];
+            const userQuery = (await connection.promise().query(`SELECT username, password, icon_url, id FROM users WHERE username = ?`, [username]))[0][0];
             if (!userQuery || !userQuery.username || !userQuery.password) {
                 return {
                     success: false,
@@ -51,20 +73,32 @@ export const connect = () => {
                 }
             }
 
-            const token = crypto.randomUUID();
+            if (!await compare(password, userQuery.password).then(res => res, err => {
+                console.error(err);
+                return false;
+            })) {
+                return {
+                    success: false,
+                    message: "Špatné heslo"
+                }
+            }
 
-            // Regenerate UUID
-            await connection.promise().query(`INSERT INTO users (username, password, token, token_created_at) VALUES (?, ?, UUID_TO_BIN(?), NOW())`, [username, password, token]);
+            const token = crypto.randomUUID();
+            const userId = userQuery.id;
+
+            await connection.promise().query(
+                `UPDATE users SET token = UUID_TO_BIN(?), token_created_at = NOW() WHERE id = ?`,
+                [token, userId]
+            );
 
             connection.promise().end();
 
-            return responseJSON(userQuery && await compare(password, userQuery.password), () => {
-                return {
-                    username: userQuery.username,
-                    avatar: userQuery.icon_url,
-                    token: token
-                }
-            }, "Špatné heslo");
+            return {
+                username: userQuery.username,
+                avatar: userQuery.icon_url,
+                token: token,
+                success: true
+            }
         },
         register: async (username: string, password: string) => {
             // Check if username exists
@@ -76,13 +110,25 @@ export const connect = () => {
                 }
             }
 
-            const response = await connection.promise().query(`INSERT INTO users (username, password, token) VALUES (?, ?, UUID_TO_BIN(UUID()))`, [username, await hash(password)]);
+            const hashedPassword = await hash(password).then((hash) => hash, (err) => {
+                console.error(err);
+                return null;
+            });
+
+            let token;
+
+            if (hashedPassword) {
+                token = crypto.randomUUID();
+                await connection.promise().query(`INSERT INTO users (username, password, token) VALUES (?, ?, UUID_TO_BIN(?))`, [username, hashedPassword, token]);
+            }
 
             connection.promise().end();
 
-            return {
-                success: true
-            };
+            return responseJSON(hashedPassword != null, () => {
+                return {
+                    token: token,
+                }
+            }, "Interní chyba");
         },
         createLesson: async (type: number, czech: string, polish: string, explanation: string, group: string) => {
             try {
@@ -124,8 +170,6 @@ export const connect = () => {
             const user = auth.user;
             const lessons = await self.getLessons("#" + lesson_id, true);
 
-            console.log(lessons);
-            
 
             if (!lessons.success || !lessons.lessons[0]) {
                 return {
@@ -162,7 +206,146 @@ export const connect = () => {
                 success: true,
                 lesson: lesson,
             };
+        },
+        getUser: async (token) => {
+            try {
+                const [rows] = await connection.promise().query(`
+                    SELECT id, username, icon_url, admin 
+                    FROM users 
+                    WHERE token = UUID_TO_BIN(?)
+                `, [token]);
+
+                connection.promise().end();
+
+                // @ts-ignore
+                if (rows.length > 0) {
+                    const user = rows[0];
+                    return {
+                        success: true,
+                        id: user.id,
+                        username: user.username,
+                        icon_url: user.icon_url,
+                        admin: user.admin
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: "User not found"
+                    };
+                }
+            } catch (err) {
+                console.error("Error getting user:", err);
+                return {
+                    success: false,
+                    message: "Error getting user"
+                };
+            }
+        },
+        getAvatarByUsername: async (username) => {
+            try {
+                const [rows] = await connection.promise().query(`
+                    SELECT icon_url 
+                    FROM users 
+                    WHERE username = ?
+                `, [username]);
+
+                connection.promise().end();
+
+                // @ts-ignore
+                if (rows.length > 0) {
+                    return {
+                        success: true,
+                        avatar: rows[0].icon_url
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: "User not found"
+                    };
+                }
+            } catch (err) {
+                console.error("Error getting avatar:", err);
+                return {
+                    success: false,
+                    message: "Error getting avatar"
+                };
+            }
+        },
+        updateUsernameByToken: async (token, newUsername) => {
+            try {
+                await connection.promise().query(`
+                    UPDATE users 
+                    SET username = ?
+                    WHERE token = UUID_TO_BIN(?)
+                `, [newUsername, token]);
+
+                connection.promise().end();
+
+                return {
+                    success: true
+                };
+            } catch (err) {
+                console.error(err);
+                return {
+                    success: false,
+                    message: "Error updating username"
+                };
+            }
+        },
+        updateAvatarByToken: async (token, newURL) => {
+            try {
+                await connection.promise().query(`
+                    UPDATE users 
+                    SET icon_url = ?
+                    WHERE token = UUID_TO_BIN(?)
+                `, [newURL, token]);
+
+                connection.promise().end();
+
+                return {
+                    success: true
+                };
+            } catch (err) {
+                console.error(err);
+                return {
+                    success: false,
+                    message: "Error updating username"
+                };
+            }
+        },
+        updatePasswordByToken: async (token, newPassword) => {
+            try {
+                const hashedPassword = await hash(newPassword).then((hash) => hash, (err) => {
+                    console.error(err);
+                    return null;
+                });
+
+                let success = false;
+
+                if (hashedPassword) {
+                    await connection.promise().query(`
+                    UPDATE users 
+                    SET password = ?
+                    WHERE token = UUID_TO_BIN(?)
+                `, [hashedPassword, token]);
+                    success = true;
+                }
+
+
+                connection.promise().end();
+
+                return {
+                    success: success
+                };
+            } catch (err) {
+                console.error(err);
+                return {
+                    success: false,
+                    message: "Error updating password"
+                };
+            }
         }
+
     }
 
     return self;

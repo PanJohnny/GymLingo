@@ -15,6 +15,7 @@ import Layout from "../../../layouts/Layout.astro";
                     name="username"
                     id="usri-username"
                     placeholder="Uživatelské jméno"
+                    pattern=".{3,25}"
                 />
             </div>
             <div>
@@ -23,6 +24,7 @@ import Layout from "../../../layouts/Layout.astro";
                     name="password"
                     id="usri-password"
                     placeholder="Heslo"
+                    pattern=".{6,25}"
                 />
             </div>
             <div>
@@ -66,8 +68,8 @@ import Layout from "../../../layouts/Layout.astro";
             // @ts-ignore
             user.value.length < 3 || // @ts-ignore
             pass.value.length < 6 || // @ts-ignore
-            user.value.length > 255 || // @ts-ignore
-            pass.value.length > 255
+            user.value.length > 25 || // @ts-ignore
+            pass.value.length > 25
         ) {
             window.alert(
                 "Uživatelské jméno a heslo musí být vyplněno. Uživatelské jméno musí minimálně obsahovat 3 znaky a heslo 6 znaků. Maximální počet znaků pro obě pole je 255.",
@@ -96,14 +98,12 @@ import Layout from "../../../layouts/Layout.astro";
                         username: user.value,
                         password: pass.value,
                     }),
-                }).then((res) => {
-                    if (res.status != 200) {
-                        window.alert(
-                            "Špatné přihlašovací údaje, nebo účet neexistuje.",
-                        );
-                    }
-                    return res.json();
-                });
+                }).then((res) => res.json());
+
+                if (!stuff.success) {
+                    alert("Chybné přihlašovací údaje");
+                }
+
                 localStorage.setItem("username", stuff.username);
                 setCookie("token", stuff.token, 7);
                 setCookie("guest", false, 0);

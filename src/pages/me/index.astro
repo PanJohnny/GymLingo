@@ -23,7 +23,7 @@ const me = await getUser(Astro.cookies.get("token").value);
         <div class="segment">
             <h1>Ahoj <span id="name">{me.username}</span></h1>
             <img
-                src={"/api/user/icon/" + Astro.cookies.get("token").value}
+                src={"/api/v2/user/info/avatar/" + me.username}
                 alt="profilový obrázek"
                 id="icon"
             />
@@ -49,6 +49,7 @@ const me = await getUser(Astro.cookies.get("token").value);
                     type="text"
                     name="username"
                     id="username"
+                    pattern=".{3,25}"
                     placeholder={me.username}
                 />
                 <input
@@ -64,12 +65,14 @@ const me = await getUser(Astro.cookies.get("token").value);
                     name="password"
                     id="password"
                     placeholder="Heslo"
+                    pattern=".{6,25}"
                 />
                 <input
                     type="password"
                     name="repeat password"
                     id="password-again"
                     placeholder="Zopakujte heslo"
+                    pattern=".{6,25}"
                 />
                 <input type="button" value="Změnit heslo" id="password-btn" />
             </div>
@@ -78,38 +81,16 @@ const me = await getUser(Astro.cookies.get("token").value);
             <h2>Odhlašte se</h2>
             <input type="button" value="Odhlásit se" id="logout" />
         </div>
-        <div class="segment">
-            <h2>Pro vývojáře</h2>
-            <p>
-                Pokud chcete využívat API této aplikace, zde je váš token: <code
-                    id="token"
-                    ><input
-                        type="button"
-                        value="Zobrazit"
-                        onclick={"document.querySelector('#token').innerHTML = '" +
-                            Astro.cookies.get("token").value +
-                            "'"}
-                    /></code>
-            </p>
-            <p>
-                Token vždy uveďte v headeru: <code
-                    >Authorization: Bearer 00000000-0000-0000-0000-000000000000</code>
-            </p>
-            <p>
-                Plná dokumentace na <a href="/developer/docs" target="_blank"
-                    >/developer/docs</a>
-            </p>
-            {
-                me.admin ? (
-                    <p>
-                        Nástroj administrátora{" "}
-                        <a href="/developer/dashboard" target="_blank">
-                            /developer/dashboard
-                        </a>
-                    </p>
-                ) : undefined
-            }
-        </div>
+        {
+            me.admin ? (
+                <p>
+                    Nástroj administrátora{" "}
+                    <a href="/developer/dashboard" target="_blank">
+                        /developer/dashboard
+                    </a>
+                </p>
+            ) : undefined
+        }
         <div class="segment">
             <h2>Dokumenty</h2>
             <ul>

@@ -7,15 +7,12 @@ if (Astro.request.method != "POST") return response.methodNotAllowed;
 
 try {
     const json = await Astro.request.json();
-    console.log(json);
-    console.log(json.username);
-    console.log(json.password);
     
-    
-    
-    if (!json.hasOwnProperty("username") || !json.hasOwnProperty("password")) {   
-        console.log("BAD REQuest");
-         
+    if (!json.hasOwnProperty("username") || !json.hasOwnProperty("password")) {  
+        return response.badRequest;
+    }
+
+    if (!/.{3,25}/g.test(json.username) || !/.{6,25}/g.test(json.password)) {
         return response.badRequest;
     }
 

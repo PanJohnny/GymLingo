@@ -11,6 +11,10 @@ try {
         return response.badRequest;
     }
 
+    if (!/.{3,25}/g.test(json.username) || !/.{6,25}/g.test(json.password)) {
+        return response.badRequest;
+    }
+
     const login = await connect().register(json.username, json.password);
     return response.generic(login, 401);
 } catch (err) {

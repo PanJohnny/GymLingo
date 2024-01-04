@@ -15,6 +15,7 @@ import Layout from "../../../layouts/Layout.astro";
                     name="username"
                     id="usri-username"
                     placeholder="Uživatelské jméno"
+                    pattern=".{3,25}"
                 />
             </div>
             <div>
@@ -23,6 +24,7 @@ import Layout from "../../../layouts/Layout.astro";
                     name="password"
                     id="usri-password"
                     placeholder="Heslo"
+                    pattern=".{6,25}"
                 />
             </div>
             <div>
@@ -32,8 +34,10 @@ import Layout from "../../../layouts/Layout.astro";
                 </p>
             </div>
             <p>
-                Registrací souhlasíte s <a href="/me/privacy" target="_blank" rel="noopener noreferrer"
-                    >podmínkami ochrany soukromí</a
+                Registrací souhlasíte s <a
+                    href="/me/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer">podmínkami ochrany soukromí</a
                 >
             </p>
         </div>
@@ -41,54 +45,58 @@ import Layout from "../../../layouts/Layout.astro";
 </Layout>
 
 <script type="module">
-const logon = document.querySelector("#logon");
+    import { setCookie } from "/cookies.js";
 
-const user = document.querySelector("#usri-username");
-const pass = document.querySelector("#usri-password");
+    const logon = document.querySelector("#logon");
 
-function checkFields() {
-    if (// @ts-ignore
-        user.value.length < 3 ||// @ts-ignore
-        pass.value.length < 6 ||// @ts-ignore
-        user.value.length > 255 ||// @ts-ignore
-        pass.value.length > 255
-    ) {
-        window.alert(
-            "Uživatelské jméno a heslo musí být vyplněno. Uživatelské jméno musí minimálně obsahovat 3 znaky a heslo 6 znaků. Maximální počet znaků pro obě pole je 255.",
-        );
+    const user = document.querySelector("#usri-username");
+    const pass = document.querySelector("#usri-password");
 
-        return false;
-    }
-    return true;
-}
-
-if (
-    logon instanceof HTMLInputElement &&
-    user instanceof HTMLInputElement &&
-    pass instanceof HTMLInputElement
-) {
-    logon.addEventListener("click", async () => {
-        if (checkFields()) {
-            const stuff = await fetch("/api/user/login", {
-                method: "PUT",
-                headers: {
-                    Username: user.value,
-                    Password: pass.value,
-                },
-            }).then(
-                (res) => {
-                    if (res.status != 201) {
-                        window.alert(
-                            "Chyba při registraci. Zkuste změnit uživatelské jméno.",
-                        );
-                    } else {
-                        location.href = "/me/auth/login?registered"
-                    }
-                }
+    function checkFields() {
+        if (
+            // @ts-ignore
+            user.value.length < 3 || // @ts-ignore
+            pass.value.length < 6 || // @ts-ignore
+            user.value.length > 25 || // @ts-ignore
+            pass.value.length > 25
+        ) {
+            window.alert(
+                "Uživatelské jméno a heslo musí být vyplněno. Uživatelské jméno musí minimálně obsahovat 3 znaky a heslo 6 znaků. Maximální počet znaků pro obě pole je 25.",
             );
+
+            return false;
         }
-    });
-}
+        return true;
+    }
+
+    if (
+        logon instanceof HTMLInputElement &&
+        user instanceof HTMLInputElement &&
+        pass instanceof HTMLInputElement
+    ) {
+        logon.addEventListener("click", async () => {
+            if (checkFields()) {
+                fetch("/api/v2/auth/register", {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        username: user.value,
+                        password: pass.value,
+                    }),
+                }).then(res => res.json()).then(json => {
+                    if (json.success) {
+                        setCookie("token", json.token, 1);
+                        location.href = "/?welcome";
+                    } else {
+                        alert("Nepodařilo se Vás registrovat. Důvod: " + json.message);
+                    }
+                });
+            }
+        });
+    }
 </script>
 
 <style>
