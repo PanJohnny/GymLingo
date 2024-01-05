@@ -81,6 +81,38 @@ import UserInfo from "../components/UserInfo.astro";
     :root {
       font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
         "Lucida Sans", Arial, sans-serif;
+
+      --light: #fbfffe;
+      --dark: #1c3041;
+      --decoration: #ff9770;
+    }
+
+    @media screen and (prefers-color-scheme: light) {
+      :root {
+        background-color: var(--light);
+        color: var(--dark);
+      }
+
+      :global(*) {
+        text-decoration-color: var(--decoration);
+        border-color: var(--dark) !important;
+      }
+    }
+
+    @media screen and (prefers-color-scheme: dark) {
+      :root {
+        background-color: var(--dark);
+        color: var(--light);
+      }
+
+      :global(*) {
+        text-decoration-color: var(--decoration);
+        border-color: var(--light) !important;
+      }
+    }
+
+    :global(a) {
+      color: inherit;
     }
 
     body {

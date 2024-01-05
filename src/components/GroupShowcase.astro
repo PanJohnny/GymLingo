@@ -1,5 +1,5 @@
 ---
-import { groupFinished } from '../database';
+import { connect } from "../util/database";
 interface Props {
     title: string;
     image: string;
@@ -7,13 +7,18 @@ interface Props {
     image_desc: string;
 }
 
-const isGuest = Astro.cookies.has("guest") && Astro.cookies.get("guest").boolean();
+const isGuest =
+    Astro.cookies.has("guest") && Astro.cookies.get("guest").boolean();
 
 const { title, image, group, image_desc } = Astro.props;
 
 let gf;
 if (!isGuest)
-    gf = await groupFinished(group, Astro.cookies.get("token").value);
+    gf = await connect().getFinishedLessonsByUserInGroup(
+        group,
+        Astro.cookies.get("token").value,
+    );
+
 ---
 
 <div class="show">
@@ -23,7 +28,7 @@ if (!isGuest)
         </a>
         <div class="image-desc" aria-hidden="true" set:html={image_desc} />
     </div>
-    {!isGuest?<span>{gf.finished + "/" + gf.lessons + " (" + Math.round(gf.ratio * 100) + "%)"}</span>:undefined}
+    {!isGuest ? <span>{gf.count+ "/" + gf.groupTotal + " (" + Math.round(gf.ratio * 100) + "%)"}</span> : undefined}
     <a href={"/app?g=" + encodeURIComponent(group)}><h2>{title}</h2></a>
 </div>
 <style>
@@ -35,7 +40,7 @@ if (!isGuest)
     }
 
     .show {
-        border: 1px solid black;
+        border: 1px solid;
         border-radius: 15px;
         overflow: hidden;
         cursor: pointer;

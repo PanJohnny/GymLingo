@@ -37,7 +37,10 @@ export const connect = () => {
     const connection = mysql.createConnection(import.meta.env.DATABASE_URL);
 
     const authUser = async (token: string) => {
-        const userQuery = (await connection.promise().query(`SELECT username, token_created_at, admin, id FROM users WHERE token = UUID_TO_BIN(?)`, [token]))[0][0];
+        const userQuery = (await connection.promise().query(`SELECT username, token_created_at, admin, id FROM users WHERE token = UUID_TO_BIN(?)`, [token]).catch(err => {
+            console.error("Failed to authenticate " + token + " with err: " + err);
+            return [[false]];
+        }))[0][0];
         if (!userQuery) {
             return {
                 success: false,
@@ -162,7 +165,7 @@ export const connect = () => {
                 lessons: lessons[0]
             }
         },
-        verifyLesson: async (token: string, group: string, lesson_id: number, polish: string) => {
+        verifyLesson: async (token: string, lesson_id: number, polish: string) => {
             const auth = await authUser(token);
             if (!auth.success)
                 return auth;
@@ -190,11 +193,11 @@ export const connect = () => {
 
             connection.promise().query(`
     INSERT INTO lpu (\`user_id\`, \`lesson_id\`, \`group\`)
-    SELECT ?, ?, "?"
+    SELECT ?, ?, ?
     WHERE NOT EXISTS (
         SELECT \`user_id\` FROM lpu
         WHERE \`user_id\` = ?
-        AND \`group\` = "?"
+        AND \`group\` = ?
         AND \`lesson_id\` = ?
     )
     `,
@@ -344,8 +347,54 @@ export const connect = () => {
                     message: "Error updating password"
                 };
             }
-        }
+        }, getFinishedLessonsByUserInGroup: async (group: string, token: string) => {
+            const auth = await authUser(token);
+            if (!auth.success) {
+                return {
+                    success: false,
+                    message: "Authentication failed",
+                };
+            }
 
+            const user = auth.user;
+            const user_id = user.id;
+
+            // Perform a SELECT query to fetch finished lessons by user in a group
+            const [finishedLessons] = await connection.promise().query(`
+        SELECT * FROM lpu
+        WHERE user_id = ? 
+        AND \`group\` = ?
+    `, [user_id, group]);
+
+            // @ts-ignore
+            if (!finishedLessons) {
+                return {
+                    success: true,
+                    finishedLessons: [],
+                    ratio: 0,
+                };
+            }
+
+            // @ts-ignore
+            const totalFinished = finishedLessons.length;
+            const [totalInGroupRows, _] = await connection.promise().query(`
+        SELECT COUNT(*) AS totalInGroup FROM lessons
+        WHERE \`group\` = ?
+    `, [group]);
+
+            connection.promise().end();
+
+            const totalInGroup = totalInGroupRows[0]?.totalInGroup || 0;
+            const ratio = totalInGroup !== 0 ? totalFinished / totalInGroup : 0;
+
+            return {
+                success: true,
+                lessons: finishedLessons,
+                ratio: ratio,
+                count: totalFinished,
+                groupTotal: totalInGroup
+            };
+        }
     }
 
     return self;

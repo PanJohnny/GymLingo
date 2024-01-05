@@ -1,8 +1,7 @@
 ---
 import { response } from "../../../../../util/response";
 import { connect } from "../../../../../util/database";
-const group = Astro.params.group;
-const id = Astro.url.searchParams.get("id");
+const id = Astro.params.id;
 const polish = Astro.url.searchParams.get("polish");
 const auth = Astro.request.headers.get("Authorization");
 
@@ -10,7 +9,7 @@ if (Astro.request.method != "POST") {
     return new Response(undefined, { status: 405 });
 }
 
-if (!group || id == null || !auth || !polish) {
+if (id == null || !auth || !polish) {
     return new Response(undefined, { status: 400 });
 }
 
@@ -23,7 +22,7 @@ if (!token) return new Response(undefined, { status: 401 });
 
 const data = await (
     connect()
-).verifyLesson(token, group, parseInt(id), polish);
+).verifyLesson(token, parseInt(id), polish);
 
 return new Response(JSON.stringify(data), {
     headers: {

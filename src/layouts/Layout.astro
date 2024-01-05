@@ -12,7 +12,7 @@ const { title, description } = Astro.props as Props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml"/>
+    <link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
     <!-- Primary Meta Tags -->
     <title>{title}</title>
     <meta name="title" content={title} />
@@ -38,9 +38,10 @@ const { title, description } = Astro.props as Props;
             target="_blank"
             rel="noopener noreferrer">Gymnáziu Litoměřická</a
           >. Zdrojový kód na <a
-          href="https://github.com/PanJohnny/GymLingo"
-          target="_blank"
-          rel="noopener noreferrer">GitHubu</a>.
+            href="https://github.com/PanJohnny/GymLingo"
+            target="_blank"
+            rel="noopener noreferrer">GitHubu</a
+          >.
         </p>
       </div>
       <a href="https://www.gymlit.cz" target="_blank" rel="noopener noreferrer"
@@ -58,6 +59,38 @@ const { title, description } = Astro.props as Props;
   :root {
     font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
       "Lucida Sans", Arial, sans-serif;
+
+    --light: #fbfffe;
+    --dark: #1c3041;
+    --decoration: #ff9770;
+  }
+
+  @media screen and (prefers-color-scheme: light) {
+    :root {
+      background-color: var(--light);
+      color: var(--dark);
+    }
+
+    :global(*) {
+      text-decoration-color: var(--decoration);
+      border-color: var(--dark) !important;
+    }
+  }
+
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      background-color: var(--dark);
+      color: var(--light);
+    }
+
+    :global(*) {
+      text-decoration-color: var(--decoration);
+      border-color: var(--light) !important;
+    }
+  }
+
+  :global(a) {
+    color: inherit;
   }
 
   body {
@@ -106,8 +139,8 @@ const { title, description } = Astro.props as Props;
 </style>
 
 <script is:inline>
-console.log(
-  `
+  console.log(
+    `
   *******************************
          VÍTEJ CESTOVATELI
   *******************************
@@ -129,9 +162,9 @@ console.log(
   Víš co? Že jsi to ty, tady tohle ti vytiskne správný odpovědi:
   a("main", "data-", "json", "atob").b("data");
   `,
-);
+  );
 
-const a = (l, m, n, o) => {
+  const a = (l, m, n, o) => {
     return {
       b: (s) => {
         const x = (c) => (s !== undefined && "()" && c && "".includes(c)) || n;
