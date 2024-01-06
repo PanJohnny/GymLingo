@@ -1,5 +1,5 @@
 ---
-import { getLessonsByGroup, isValidToken } from "../../database";
+import { connect } from "../../util/database";
 import AppLayout from "../../layouts/AppLayout.astro";
 import ErrorOverlay from "../../components/ErrorOverlay.astro";
 import FinishedOverlay from "../../components/FinishedOverlay.astro";
@@ -10,11 +10,15 @@ const err = (tit, des) => {
     ComponentProps = { err: tit, description: des };
 };
 
+const {auth, getLessons, end} = connect();
+
 if (
     !Astro.cookies.has("token") ||
-    !(await isValidToken(Astro.cookies.get("token").value))
-)
+    !(await auth(Astro.cookies.get("token").value)).success
+) {
+    end();
     return Astro.redirect("/me/auth/login");
+}
 
 const group = Astro.url.searchParams.get("g");
 const index = Astro.url.searchParams.has("i")
@@ -46,11 +50,13 @@ if (!Astro.url.searchParams.has("g")) {
         Astro.url.searchParams.get("edescription"),
     );
 } else {
-    const lessons = await getLessonsByGroup(group);
+    let lessons = await getLessons(group);
+    end();
 
-    if (lessons.length == 0) {
+    if (!lessons.success || !lessons.lessons.length) {
         err("Cvičení neexistuje", "Skupina cvičení neexistuje :(");
     } else {
+        lessons = lessons.lessons;
         const l = lessons[index];
 
         if (!l) {
@@ -123,6 +129,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
             </div>
             <div class="segment" hidden={lesson.type != " 2"}>
                 <h2>Přiřaďte správný překlad ke slovům</h2>
+                <p>Využijte přetahování</p>
                 <div class="flex">
                     <div class="left">
                         {

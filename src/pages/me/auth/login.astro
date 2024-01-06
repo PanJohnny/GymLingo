@@ -38,18 +38,6 @@ import Layout from "../../../layouts/Layout.astro";
                     >Podmínky ochrany soukromí</a
                 >
             </p>
-            <p>
-                Pokud si nechcete tvořit účet tak se můžete pokračovat jako
-                host, tuto možnost nedoporučuji, protože neumožňuje ukládání
-                postupu napříč zařízeními a další personalizaci.
-            </p>
-            <div>
-                <input
-                    type="button"
-                    value="Přihlásit se jako host"
-                    id="guest"
-                />
-            </div>
         </div>
     </main>
 </Layout>
@@ -58,7 +46,6 @@ import Layout from "../../../layouts/Layout.astro";
     // @ts-ignore
     import { setCookie } from "/cookies.js";
     const logon = document.querySelector("#logon");
-    const guest = document.querySelector("#guest");
 
     const user = document.querySelector("#usri-username");
     const pass = document.querySelector("#usri-password");
@@ -83,8 +70,7 @@ import Layout from "../../../layouts/Layout.astro";
     if (
         logon instanceof HTMLInputElement &&
         user instanceof HTMLInputElement &&
-        pass instanceof HTMLInputElement &&
-        guest instanceof HTMLInputElement
+        pass instanceof HTMLInputElement
     ) {
         logon.addEventListener("click", async () => {
             if (checkFields()) {
@@ -106,15 +92,9 @@ import Layout from "../../../layouts/Layout.astro";
 
                 localStorage.setItem("username", stuff.username);
                 setCookie("token", stuff.token, 7);
-                setCookie("guest", false, 0);
 
                 location.href = "/";
             }
-        });
-
-        guest.addEventListener("click", async () => {
-            setCookie("guest", true, 1);
-            location.href = "/";
         });
     }
 </script>

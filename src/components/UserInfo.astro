@@ -1,22 +1,14 @@
 ---
-import { getUser } from "../database";
-const isGuest =
-    Astro.cookies.has("guest") && Astro.cookies.get("guest").boolean();
+import { connect } from "../util/database";
 
-let user = {
-    icon_url: undefined,
-    username: "Host",
-    admin: false,
-};
-
-if (!isGuest) {
-    const token = Astro.cookies.has("token")
-        ? Astro.cookies.get("token").value
-        : undefined;
-
-    user = await getUser(token);
-    if (!user) user = { icon_url: undefined, username: "Nastala chyba", admin: false };
-}
+const token = Astro.cookies.has("token")
+    ? Astro.cookies.get("token").value
+    : undefined;
+const { getUser, end } = connect();
+let user:any = await getUser(token);
+if (!user.success)
+    user = { icon_url: undefined, username: "Nastala chyba", admin: false };
+end();
 ---
 
 <div class="info">

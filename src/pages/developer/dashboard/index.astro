@@ -1,25 +1,51 @@
 ---
-import { isAdmin } from "../../../database";
+import { connect } from "../../../util/database";
 import Layout from "../../../layouts/Layout.astro";
 const token = Astro.cookies.get("token");
-if (token && !isAdmin(token.value)) {
+
+if (!token) {
+    return Astro.redirect("/?err=400");
+}
+
+const { auth, end, getLessons, getUsers } = connect();
+const user = await auth(token.value);
+
+if (!user.success || !user.user.admin) {
+    end();
     return Astro.redirect("/?err=401");
 }
+
+const lessons = await getLessons("*");
+
+if (!lessons.success) {
+    end();
+    return Astro.redirect("/?err=500");
+}
+
+const users = await getUsers();
+end();
+
+if (!users.success) {
+    return Astro.redirect("/?err=500");
+}
+
+const l = lessons.lessons;
+const u = users.users;
 ---
 
 <Layout title="Nástroje administrátora" description="Administrátor">
     <main>
         <div id="form">
             <h1>Vytvořít lekci</h1>
-             Typ:
+            Typ:
             <input type="number" name="" id="type" />
-             Česky:
+            Česky:
             <input type="text" name="" id="czech" />
-             Polsky:
+            Polsky:
             <input type="text" name="" id="polish" />
-             Vysvětlení:
+            Vysvětlení:
             <input type="text" name="" id="explenation" />
-             Skupina:
+            Skupina:
             <input type="text" name="" id="group" />
             <input type="button" value="Odeslat" id="send" />
         </div>
@@ -28,20 +54,95 @@ if (token && !isAdmin(token.value)) {
             target="_blank"
             rel="noopener noreferrer">SQL Databáze</a
         >
-        <div>
-            <h1>Lekce</h1>
-            <table>
-                <thead>
-                    <th>ID</th>
-                    <th>Typ</th>
-                    <th>Česky</th>
-                    <th>Polsky</th>
-                    <th>Vysvětlení</th>
-                    <th>Skupina</th>
-                    <th>Odstranění</th>
-                </thead>
-            </table>
-        </div>
+        <details open>
+            <summary> Lekce</summary>
+            <div>
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Typ</th>
+                        <th>Česky</th>
+                        <th>Polsky</th>
+                        <th>Vysvětlení</th>
+                        <th>Skupina</th>
+                        <th>Akce</th>
+                    </tr>
+                    {
+                        l.map((i) => (
+                            <tr>
+                                <td>{i.id}</td>
+                                <td>{i.type}</td>
+                                <td>{i.czech}</td>
+                                <td>{i.polish}</td>
+                                <td>{i.explanation ? i.explanation : "###"}</td>
+                                <td>{i.group}</td>
+                                <td>
+                                    <a
+                                        href={
+                                            "javascript:deletePopup(" +
+                                            i.id +
+                                            ")"
+                                        }
+                                    >
+                                        🗑
+                                    </a>
+                                    <a
+                                        href={
+                                            "javascript:editPopup(" + i.id + ")"
+                                        }
+                                    >
+                                        ✏
+                                    </a>
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </table>
+            </div>
+        </details>
+        <details open>
+            <summary> Uživatelé</summary>
+            <div>
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Icon</th>
+                        <th>Admin</th>
+                        <th>Akce</th>
+                    </tr>
+                    {
+                        // @ts-ignore
+                        u.map((i) => (
+                            <tr>
+                                <td>{i.id}</td>
+                                <td>{i.username}</td>
+                                <td class="icon">{i.icon_url}</td>
+                                <td>{i.admin}</td>
+                                <td>
+                                    <a
+                                        href={
+                                            "javascript:deletePopupU(" +
+                                            i.id +
+                                            ")"
+                                        }
+                                    >
+                                        🗑
+                                    </a>
+                                    <a
+                                        href={
+                                            "javascript:editPopupU(" + i.id + ")"
+                                        }
+                                    >
+                                        ✏
+                                    </a>
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </table>
+            </div>
+        </details>
     </main>
 </Layout>
 
@@ -71,7 +172,7 @@ if (token && !isAdmin(token.value)) {
                 group: group.value,
             };
 
-            fetch("/api/lesson/create", {
+            fetch("/api/v2/lesson/create", {
                 method: "PUT",
                 body: JSON.stringify(json),
                 headers: {
@@ -83,49 +184,61 @@ if (token && !isAdmin(token.value)) {
                     alert("Úspěšně vytvořeno");
                     czech.value = "";
                     polish.value = "";
-                    loadTable();
+                    location.reload();
                 },
                 (e) => {
                     alert("Chyba " + e);
                 },
             );
         });
-
-        loadTable();
-    }
-
-    function loadTable() {
-        document.querySelector("table").querySelectorAll("tr[data-generated]").forEach(el => el.remove());
-        fetch("/api/lesson/get", {
-            headers: {
-                // @ts-ignore
-                Authorization: "Bearer " + getCookie("token"),
-            },
-        })
-            .then((res) => res.json())
-            .then((json) => {
-                json.forEach((el) => {
-                    const row = document.createElement("tr");
-                    Object.values(el).forEach((v) => {
-                        const td = document.createElement("td");
-                        td.innerText = v + "";
-                        row.appendChild(td);
-                    });
-
-                    const td = document.createElement("td");
-                    td.innerText =
-                        "DELETE FROM lessons WHERE id = " + el.id + ";";
-                    row.appendChild(td);
-                    row.setAttribute("data-generated", "true");
-                    document.querySelector("table").appendChild(row);
-                });
-            })
-            .catch((err) => {
-                window.location.href = "/?err=401";
-            });
     }
 </script>
 
+<script is:inline>
+    function deletePopup(num) {
+        const opened = window.open(
+            "/developer/dashboard/action/removeLesson?id=" + num,
+            "GymLingo",
+            "width=500,height=500",
+        );
+        opened.addEventListener("beforeunload", () => {
+            window.location.reload();
+        });
+    }
+
+    function editPopup(num) {
+        const opened = window.open(
+            "/developer/dashboard/action/editLesson?id=" + num,
+            "GymLingo",
+            "width=500,height=500",
+        );
+        opened.addEventListener("beforeunload", () => {
+            window.location.reload();
+        });
+    }
+
+    function deletePopupU(num) {
+        const opened = window.open(
+            "/developer/dashboard/action/removeUser?id=" + num,
+            "GymLingo",
+            "width=500,height=500",
+        );
+        opened.addEventListener("beforeunload", () => {
+            window.location.reload();
+        });
+    }
+
+    function editPopupU(num) {
+        const opened = window.open(
+            "/developer/dashboard/action/editUser?id=" + num,
+            "GymLingo",
+            "width=500,height=500",
+        );
+        opened.addEventListener("beforeunload", () => {
+            window.location.reload();
+        });
+    }
+</script>
 <style is:inline>
     main {
         margin: 2em;
@@ -133,6 +246,7 @@ if (token && !isAdmin(token.value)) {
 
     tr:nth-child(even) {
         background-color: #f2f2f2;
+        color: black;
     }
 
     th,
@@ -153,8 +267,35 @@ if (token && !isAdmin(token.value)) {
         outline: none;
         border: 1px solid black;
     }
-    
+
     input[type="button"] {
         cursor: pointer;
+    }
+
+    td > a {
+        background-color: white;
+        color: black;
+        text-decoration: none;
+        border: 1px solid black !important;
+        padding: 2px;
+        font-weight: bolder;
+        margin-right: 10px;
+    }
+
+    summary {
+        background-color: black;
+        color: white;
+        border: 1px solid white;
+        padding: 2em;
+    }
+
+    details {
+        margin: 1em;
+    }
+
+    .icon {
+        max-width: 10vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 </style>

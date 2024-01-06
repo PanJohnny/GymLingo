@@ -2,16 +2,12 @@
 import GroupShowcase from "../components/GroupShowcase.astro";
 import UserInfo from "../components/UserInfo.astro";
 import Layout from "../layouts/Layout.astro";
-import { isValidToken } from "../database";
 import Header1 from "../components/Header1.astro";
-
-const isGuest =
-	Astro.cookies.has("guest") && Astro.cookies.get("guest").boolean();
+import { isValidUser } from "../util/database";
 
 if (
-	!isGuest &&
-	(!Astro.cookies.has("token") ||
-		!(await isValidToken(Astro.cookies.get("token").value)))
+	!Astro.cookies.has("token") ||
+	!(await isValidUser(Astro.cookies.get("token").value))
 )
 	return Astro.redirect("/me/auth/login");
 ---
@@ -23,8 +19,8 @@ if (
 			Astro.url.searchParams.has("welcome") ? (
 				<>
 					<div style="background-color: aqua; border: 1px solid black; position: absolute; max-width: 200px; left: 100px; padding: 5px;">
-						TIP: Klepnutím na uživatelské jméno otevřete stránku na které
-						si můžete změnit profilovku a další...
+						TIP: Klepnutím na uživatelské jméno otevřete stránku na
+						které si můžete změnit profilovku a další...
 					</div>
 					<h2>Vítejte na stránce!</h2>
 				</>
@@ -33,6 +29,9 @@ if (
 		<Header1 />
 	</header>
 	<main>
+		<nav>
+			<a href="/slovnik">Veškerá evidovaná slovíčka naleznete zde</a>
+		</nav>
 		<GroupShowcase
 			title="Zvířata"
 			group="animals"

@@ -1,10 +1,12 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getLessons } from "../../database";
+import { connect } from "../../util/database";
 import Header1 from "../../components/Header1.astro";
 
-const lessons = await getLessons();
-if (!lessons) {
+const {getLessons, end} = connect();
+const lessons = await getLessons("*");
+end();
+if (!lessons.success) {
     return new Response(
         "Nepodařilo se načíst data, za tuto komplikaci se omlouváme. Pokud chyba přetrvává nahlašte ji na GitHubu: https://github.com/PanJohnny/GymLingo/issues nebo mi napište email: janstefanca@seznam.cz",
     );
@@ -18,7 +20,7 @@ if (!lessons) {
     </header>
     <main>
         <p>
-           Tato stránka obsahuje všechna slova v databázy. Za správnost neručíme. Některé věi se mohou vyskytnout několikrát.
+           Tato stránka obsahuje všechna slova v databázy. Některé se mohou vyskytnout několikrát. Pokud najdete něco chybného prosím nahlašte to na GitHubu.
         </p>
         <table>
             <thead>
@@ -27,7 +29,7 @@ if (!lessons) {
             </thead>
             {
                 // @ts-ignore
-                lessons.map((lesson) => (
+                lessons.lessons.map((lesson) => (
                     <tr>
                         <td>{lesson.czech}</td>
                         <td>{lesson.polish}</td>
@@ -76,5 +78,6 @@ if (!lessons) {
 
     tr:nth-child(even) {
         background-color: lightgray;
+        color: black;
     }
 </style>

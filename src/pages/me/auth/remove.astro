@@ -1,0 +1,170 @@
+---
+import Header1 from "../../../components/Header1.astro";
+import Layout from "../../../layouts/Layout.astro";
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <header><Header1 /></header>
+    <main>
+        <div>
+            <h2>Mazání účtu</h2>
+            <p>
+                Pokud opravdu chcete vymazat svůj účet prosím zadejte své
+                uživatelské jméno a heslo. Mazání vašeho účtu vymaže všechna
+                vaše data, takže i váš <b>postup</b>. Tato akce je <b>trvalá</b>
+                a nejde <b>zvrátit</b>.
+            </p>
+            <div>
+                <input
+                    type="text"
+                    name="username"
+                    id="usri-username"
+                    placeholder="Uživatelské jméno"
+                    pattern=".{3,25}"
+                />
+            </div>
+            <div>
+                <input
+                    type="password"
+                    name="password"
+                    id="usri-password"
+                    placeholder="Heslo"
+                    pattern=".{6,25}"
+                />
+            </div>
+            <div>
+                <input
+                    type="button"
+                    value="Opravdu chci vymazat svůj účet"
+                    onclick="document.querySelector('#logon').disabled = false;"
+                />
+                <input type="button" value="Vymazat účet" id="logon" disabled />
+                <p>
+                    Ještě pořád můžete tuto operaci zvrátit. <a href="/"
+                        >Vrátit se na úvodní obrazovku.</a
+                    >
+                </p>
+            </div>
+            <p>
+                <a href="/me/privacy" target="_blank" rel="noopener noreferrer"
+                    >Podmínky ochrany soukromí</a
+                >
+            </p>
+            <dialog id="error">
+                <h1>Někde nastala chyba</h1>
+                <p>
+                    Při vymazávání vašeho účtu nastala chyba. Pokud přetrvává
+                    prosím kontaktujte administrátora janstefanca@seznam.cz.
+                </p>
+                <p class="message"></p>
+            </dialog>
+            <dialog id="success">
+                <h1>Váš účet byl vymazán</h1>
+                <p>
+                    Děkuju za využití mojí aplikace.
+                </p>
+            </dialog>
+        </div>
+    </main>
+</Layout>
+
+<script type="module">
+    // @ts-ignore
+    import { setCookie, deleteAllCookies } from "/cookies.js";
+    const logon = document.querySelector("#logon");
+
+    const user = document.querySelector("#usri-username");
+    const pass = document.querySelector("#usri-password");
+
+    function checkFields() {
+        if (
+            // @ts-ignore
+            user.value.length < 3 || // @ts-ignore
+            pass.value.length < 6 || // @ts-ignore
+            user.value.length > 25 || // @ts-ignore
+            pass.value.length > 25
+        ) {
+            window.alert(
+                "Uživatelské jméno a heslo musí být vyplněno. Uživatelské jméno musí minimálně obsahovat 3 znaky a heslo 6 znaků. Maximální počet znaků pro obě pole je 255.",
+            );
+
+            return false;
+        }
+        return true;
+    }
+
+    if (
+        logon instanceof HTMLInputElement &&
+        user instanceof HTMLInputElement &&
+        pass instanceof HTMLInputElement
+    ) {
+        logon.addEventListener("click", async () => {
+            if (checkFields()) {
+                try {
+                    const stuff = await fetch("/api/v2/user/remove", {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json",
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            username: user.value,
+                            password: pass.value,
+                        }),
+                    }).then((res) => res.json());
+
+                    if (!stuff.success) {
+                        const errorModal =
+                            document.querySelector("dialog#error");
+                        errorModal.showModal();
+                        if (stuff.message) {
+                            errorModal.querySelector(".message").innerText =
+                                stuff.message;
+                        }
+
+                        return;
+                    }
+
+                    const modal =
+                            document.querySelector("dialog#success");
+                    modal.showModal();
+                    localStorage.clear();
+                    deleteAllCookies();
+
+                } catch (err) {
+                    const errorModal = document.querySelector("dialog#error");
+                    errorModal.showModal();
+                    if (stuff.message) {
+                        errorModal.querySelector(".message").innerText = "Chyba na straně klienta: " + err;
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+<style>
+    main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+    }
+    input {
+        padding: 0.4em;
+        margin: 0.2em;
+        border-radius: 4px;
+        outline: none;
+        border: 1px solid black;
+    }
+    input[type="button"] {
+        cursor: pointer;
+    }
+    header {
+        text-align: center;
+    }
+
+    p {
+        max-width: 60vw;
+    }
+</style>

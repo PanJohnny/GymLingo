@@ -1,13 +1,14 @@
 ---
 import { response } from "../../../../util/response";
 import { connect } from "../../../../util/database";
-// POST /api/v2/auth/register
+// POST /api/v2/user/remove
 // {username, password}
 if (Astro.request.method != "POST") return response.methodNotAllowed;
 
 try {
     const json = await Astro.request.json();
-    if (!json.username || !json.password) {
+    
+    if (!json.hasOwnProperty("username") || !json.hasOwnProperty("password")) {  
         return response.badRequest;
     }
 
@@ -15,11 +16,11 @@ try {
         return response.badRequest;
     }
 
-    const {register, end} = connect();
-    const login = await register(json.username, json.password);
+    const {removeAllUserData, end} = connect();
+    const login = await removeAllUserData(json.username, json.password);
     end();
     return response.generic(login, 401);
 } catch (err) {
-    return response.badRequest;
+    return response.err(err);
 }
 ---

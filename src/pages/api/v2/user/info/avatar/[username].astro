@@ -5,9 +5,10 @@ if (Astro.request.method != "GET") return new Response(undefined, 405);
 const { username } = Astro.params;
 if (!username) return new Response(undefined, { status: 400 });
 
-const { getAvatarByUsername } = connect();
+const { getAvatarByUsername, end } = connect();
 
 const avatar = await getAvatarByUsername(username);
+end();
 if (!avatar.success) {
     return new Response(undefined, {status: 404});
 }

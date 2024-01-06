@@ -1,0 +1,40 @@
+---
+import { connect } from "../../../../util/database";
+import Layout from "../../../../layouts/Layout.astro";
+const token = Astro.cookies.get("token");
+
+if (!token) {
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const { auth, end, getLessons, updateLessonById } = connect();
+const user = await auth(token.value);
+
+if (!user.success || !user.user.admin) {
+    end();
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const lessons = await getLessons("#" + Astro.url.searchParams.get("id"));
+
+if (!lessons.success) {
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const l = lessons.lessons;
+if (l.length == 0) return Astro.redirect("/developer/dashboard/action/close");
+
+const a = Astro.url.searchParams;
+
+const response = await updateLessonById(Astro.url.searchParams.get("id"), a.get("czech"), a.get("polish"), a.get("explanation"), a.get("type"), a.get("group"));
+end();
+---
+
+<Layout title="Nástroje administrátora" description="Administrátor">
+    <h1>{response.message}</h1>
+    {
+        response.success ? (
+            <script>setTimeout(window.close, 1000);</script>
+        ) : "Chyba :("
+    }
+</Layout>

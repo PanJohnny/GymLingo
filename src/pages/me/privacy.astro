@@ -9,7 +9,12 @@ import Layout from "../../layouts/Layout.astro";
 >
     <header><Header1 /></header>
     <main>
-        <p>Prosím mějte napaměti, že toto je pouze studentský projekt. Nevím jak moc právně závazné jsou tyto podmínky, spíše jsem je vytvořil k informování.</p>
+        <p>
+            Prosím mějte napaměti, že toto je pouze studentský projekt. Nevím
+            jak moc právně závazné jsou tyto podmínky, spíše jsem je vytvořil k
+            informování. Vaše data jsou bezpečná a heslo je zašifrované pomocí
+            moderního algoritmu.
+        </p>
         <h1>Podmínky ochrany soukromí</h1>
         <p>
             Provozovatel stránky nemá způsob kontaktování uživatele a neuchovává
@@ -19,17 +24,17 @@ import Layout from "../../layouts/Layout.astro";
                 href="/me/breach"
                 target="_blank"
                 rel="noopener noreferrer">/me/breach</a
-            > a na hlavní straně. Prosím dbejte na to, že toto není právní
-            dokument a tato aplikace je pouze studentský projekt. Pokud máte
-            nějaké připomínky, stížnosti apod. prosím kontaktujte mě na adrese <a
-                href="mailto:janstefanca@seznam.cz">janstefanca@seznam.cz</a
+            > a na hlavní straně. Prosím dbejte na to, že tato aplikace je pouze
+            studentský projekt. Pokud máte nějaké připomínky, stížnosti apod. prosím
+            kontaktujte mě na adrese <a href="mailto:janstefanca@seznam.cz"
+                >janstefanca@seznam.cz</a
             >.
         </p>
         <div>
             <h2>Jaké informace jsou uchovávány</h2>
             <ul>
                 <li>Uživatelské jméno</li>
-                <li>Heslo (zaklíčované pomocí SHA-256 hash algoritmu)</li>
+                <li>Heslo (zaklíčované pomocí bcrypt algoritmu)</li>
                 <li>URL na profilovou fotografii (pokud ji uživatel uvede)</li>
                 <li>Unikátní klíč pro komunikaci (API token)</li>
                 <li>Data o vyplněných úlohách</li>
@@ -43,17 +48,11 @@ import Layout from "../../layouts/Layout.astro";
             </p>
         </div>
         <div>
-            <h2>Odvolání</h2>
+            <h2>Odpovědnost</h2>
             <p>
-                Uživatel má právo kdykoliv požádat o smazání dat a to na email <a
-                    href="mailto:janstefanca@seznam.cz?subject=%C5%BD%C3%A1dost%20o%20smaz%C3%A1n%C3%AD%20u%C5%BEivatele%20z%20webu%20gymlingo.vercel.app"
-                    target="_blank"
-                    rel="noopener noreferrer">janstefanca@seznam.cz</a
-                >. V emailu prosím uveďte svůj tzv. token, který naleznete na
-                adrese <a href="/me" target="_blank" rel="noopener noreferrer"
-                    >/me</a
-                > v sekci: Pro vývojáře. Administrátor webu může kdykoliv
-                vymazat váš profil a to bez upozornění.
+                Tímto odvolávám veškerou odpovědnost ohledně uživatelských dat.
+                Vyhrazuji si právo kdykoliv jakákoliv vymazat či upravit, a to
+                bez potřebného souhlasu.
             </p>
         </div>
         <div>
@@ -111,7 +110,7 @@ SOFTWARE.
                                     </pre>
                 </details>
             </p>
-            
+            <p>Napsal Jan Štefanča</p>
         </div>
     </main>
 </Layout>

@@ -16,8 +16,10 @@ try {
         return response.badRequest;
     }
 
-    const login = await connect().login(json.username, json.password);
-    return response.generic(login, 401);
+    const {login, end} = connect();
+    const res = await login(json.username, json.password);
+    end();
+    return response.generic(res, 401);
 } catch (err) {
     return response.err(err);
 }

@@ -12,13 +12,13 @@ const isGuest =
 
 const { title, image, group, image_desc } = Astro.props;
 
-let gf;
-if (!isGuest)
-    gf = await connect().getFinishedLessonsByUserInGroup(
-        group,
-        Astro.cookies.get("token").value,
-    );
+const { getFinishedLessonsByUserInGroup, end } = connect();
+const gf = await getFinishedLessonsByUserInGroup(
+    group,
+    Astro.cookies.get("token").value,
+);
 
+end();
 ---
 
 <div class="show">
@@ -28,7 +28,18 @@ if (!isGuest)
         </a>
         <div class="image-desc" aria-hidden="true" set:html={image_desc} />
     </div>
-    {!isGuest ? <span>{gf.count+ "/" + gf.groupTotal + " (" + Math.round(gf.ratio * 100) + "%)"}</span> : undefined}
+    {
+        !isGuest ? (
+            <span>
+                {gf.count +
+                    "/" +
+                    gf.groupTotal +
+                    " (" +
+                    Math.round(gf.ratio * 100) +
+                    "%)"}
+            </span>
+        ) : undefined
+    }
     <a href={"/app?g=" + encodeURIComponent(group)}><h2>{title}</h2></a>
 </div>
 <style>

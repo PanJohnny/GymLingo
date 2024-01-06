@@ -1,5 +1,5 @@
 ---
-import { createLesson, isAdmin } from "../../../database";
+import { connect } from "../../../../util/database";
 if (Astro.request.method != "PUT")
     return new Response(undefined, { status: 400 });
 
@@ -9,17 +9,26 @@ if (auth) {
     const args = auth.split(" ");
     if (args.length == 2 && args[0] == "Bearer") {
         const token = args[1];
-        if (await isAdmin(token)) {
+        const {auth, createLesson, end} = connect();
+        const user = await auth(token);
+        if (user.success && user.user.admin) {
             // read body
             const body = await Astro.request.json();
             
             if (body.type != undefined && body.czech && body.polish && body.group) {
-                createLesson(body.type, body.czech, body.polish, body.explenation?body.explanation:"", body.group);
+                const res = await createLesson(body.type, body.czech, body.polish, body.explenation?body.explanation:"", body.group);
+                end();
+                if (res.success) {
+                    return new Response(JSON.stringify(res), { status: 201 });
+                } else {
+                    return new Response(JSON.stringify(res), { status: 500 });
+                }
             } else {
+                end();
                 return new Response(undefined, { status: 400 });
             }
-            return new Response(undefined, { status: 201 });
         } else {
+            end();
             return new Response(undefined, { status: 401 });
         }
     }

@@ -13,7 +13,8 @@ if (auth) {
     if (args.length == 2 && args[0] == "Bearer") {
         const token = args[1];
         if (/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g.test(token)) {
-            const {updateAvatarByToken} = connect();
+            const {updateAvatarByToken, end} = connect();
+            end();
             const response = await updateAvatarByToken(token, url);
             if (response.success) {
                 return new Response(response, {status: 200});

@@ -1,0 +1,68 @@
+---
+import { connect } from "../../../../util/database";
+import Layout from "../../../../layouts/Layout.astro";
+const token = Astro.cookies.get("token");
+
+if (!token) {
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const { auth, end, getLessons } = connect();
+const user = await auth(token.value);
+
+if (!user.success || !user.user.admin) {
+    end();
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const lessons = await getLessons("#" + Astro.url.searchParams.get("id"));
+
+if (!lessons.success) {
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const l = lessons.lessons;
+if (l.length == 0) return Astro.redirect("/developer/dashboard/action/close");
+
+const i = l[0];
+---
+
+<Layout title="Nástroje administrátora" description="Administrátor">
+    <h1>Upravte lekci</h1>
+    <div class="data">
+        <span id="id">{i.id}</span>
+        <span>{i.type}</span>
+        <span>{i.czech}</span>
+        <span>{i.polish}</span>
+        <span>{i.explanation ? i.explanation : "###"}</span>
+        <span>{i.group}</span>
+    </div>
+    Typ:
+    <input type="number" name="" id="type" value={i.type} />
+    Česky:
+    <input type="text" name="" id="czech" value={i.czech} />
+    Polsky:
+    <input type="text" name="" id="polish" value={i.polish} />
+    Vysvětlení:
+    <input type="text" name="" id="explanation" value={i.explanation} />
+    Skupina:
+    <input type="text" name="" id="group" value={i.group} />
+    <input type="button" value="Odeslat" id="send" />
+    <script>
+        const btn: HTMLInputElement | null = document.querySelector("#send");
+        const type: HTMLInputElement | null = document.querySelector("#type");
+        const czech: HTMLInputElement | null = document.querySelector("#czech");
+        const explanation: HTMLInputElement | null = document.querySelector("#explanation");
+        const polish: HTMLInputElement | null = document.querySelector("#polish");
+        const group: HTMLInputElement | null = document.querySelector("#group");
+        const id = document.querySelector("#id");
+
+        if (btn && type && czech && explanation && polish && group && id) {
+            btn.addEventListener("click", () => {
+                const data = [type, czech, explanation, polish, group];
+                const str = data.map(val => val.id + "=" + val.value + "&") + "id=" + id.innerHTML.trim();
+                location.href = "/developer/dashboard/action/updateLesson?" + str.replaceAll(",", "");
+            });
+        }
+    </script>
+</Layout>

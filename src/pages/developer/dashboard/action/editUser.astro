@@ -1,0 +1,57 @@
+---
+import { connect } from "../../../../util/database";
+import Layout from "../../../../layouts/Layout.astro";
+const token = Astro.cookies.get("token");
+
+if (!token) {
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const { auth, end, getUserById } = connect();
+const user = await auth(token.value);
+
+if (!user.success || !user.user.admin) {
+    end();
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+
+const i = await getUserById(Astro.url.searchParams.get("id"));
+console.log(i);
+
+end();
+if (!i.success) {
+    return Astro.redirect("/developer/dashboard/action/close");
+}
+---
+
+<Layout title="Nástroje administrátora" description="Administrátor">
+    <h1>Upravte lekci</h1>
+    <div class="data">
+        <span id="id">{i.id}</span>
+        <span>{i.username}</span>
+        <span>{i.icon_url}</span>
+        <span>{i.admin}</span>
+    </div>
+    Username:
+    <input type="text" name="" id="username" value={i.username} />
+    Icon:
+    <input type="text" name="" id="icon_url" value={i.icon_url} />
+    Admin:
+    <input type="text" name="" id="admin" value={i.admin} />
+    <input type="button" value="Odeslat" id="send" />
+    <script>
+        const btn: HTMLInputElement | null = document.querySelector("#send");
+        const type: HTMLInputElement | null = document.querySelector("#username");
+        const czech: HTMLInputElement | null = document.querySelector("#icon_url");
+        const explanation: HTMLInputElement | null = document.querySelector("#admin");
+        const id = document.querySelector("#id");
+
+        if (btn && type && czech && explanation && id) {
+            btn.addEventListener("click", () => {
+                const data = [type, czech, explanation];
+                const str = data.map(val => val.id + "=" + val.value + "&") + "id=" + id.innerHTML.trim();
+                location.href = "/developer/dashboard/action/updateUser?" + str.replaceAll(",", "");
+            });
+        }
+    </script>
+</Layout>
