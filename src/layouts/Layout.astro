@@ -75,6 +75,10 @@ const { title, description } = Astro.props as Props;
       text-decoration-color: var(--decoration);
       border-color: var(--dark) !important;
     }
+
+    :global(.background) {
+        background-color: var(--light);
+      }
   }
 
   @media screen and (prefers-color-scheme: dark) {
@@ -87,6 +91,10 @@ const { title, description } = Astro.props as Props;
       text-decoration-color: var(--decoration);
       border-color: var(--light) !important;
     }
+
+    :global(.background) {
+        background-color: var(--dark);
+      }
   }
 
   :global(a) {
