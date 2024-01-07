@@ -144,11 +144,13 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                                 class="floating-segment"
                             />
                         </div>
-                        <img
-                            src={firstImg}
-                            aria-hidden="true"
-                            loading="eager"
-                        />
+                        <div class="imageContainer">
+                            <img
+                                src={firstImg}
+                                aria-hidden="true"
+                                loading="eager"
+                            />
+                        </div>
                     </div>
                 ) : lesson.type == "2" ? (
                     <div class="segment">
@@ -195,11 +197,13 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                                 />
                             </div>
                         </div>
-                        <img
-                            src={firstImg}
-                            aria-hidden="true"
-                            loading="eager"
-                        />
+                        <div class="imageContainer">
+                            <img
+                                src={firstImg}
+                                aria-hidden="true"
+                                loading="eager"
+                            />
+                        </div>
                     </div>
                 ) : (
                     "Tento typ lekce neexistuje, ale fakt nevím jak vidíte tenhle text."
@@ -261,7 +265,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
         }
 
         if (data) {
-            answer.focus();
+            if (answer) answer.focus();
             const help: HTMLInputElement = document.querySelector(".help");
             const idk: HTMLDivElement = document.querySelector("footer > .idk");
             const c: HTMLDivElement =
@@ -319,7 +323,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                     c.hidden = false;
                     i.hidden = true;
                     idk.hidden = true;
-                    answer.classList.add("correct");
+                    if (answer) answer.classList.add("correct");
                     help.hidden = true;
 
                     speakAnswer();
@@ -335,12 +339,12 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                         c.querySelector(".explanation");
 
                     explain.innerText = request.lesson.explanation;
-                    answer.value = request.lesson.polish;
+                    if (answer) answer.value = request.lesson.polish;
                 } else {
                     c.hidden = true;
                     i.hidden = false;
                     idk.hidden = true;
-                    answer.classList.add("incorrect");
+                    if (answer) answer.classList.add("incorrect");
                 }
             }
 
@@ -629,6 +633,12 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
     img {
         border-radius: 12px;
         max-width: 90vw;
+    }
+
+    .imageContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .translate {
