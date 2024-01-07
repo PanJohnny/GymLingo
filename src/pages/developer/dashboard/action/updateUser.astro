@@ -17,7 +17,7 @@ if (!user.success || !user.user.admin) {
 
 const a = Astro.url.searchParams;
 
-const response = await updateUserById(Astro.url.searchParams.get("id"), a.get("username"), a.get("icon_url"), a.get("admin")?1:0);
+const response = await updateUserById(Astro.url.searchParams.get("id"), a.get("username"), a.get("icon_url"), a.get("admin")=="1");
 end();
 ---
 

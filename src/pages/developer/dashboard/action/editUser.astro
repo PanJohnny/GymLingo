@@ -37,7 +37,7 @@ if (!i.success) {
     Icon:
     <input type="text" name="" id="icon_url" value={i.icon_url} />
     Admin:
-    <input type="text" name="" id="admin" value={i.admin} />
+    <input type="text" name="" id="admin" value={i.admin?"1":"0"} />
     <input type="button" value="Odeslat" id="send" />
     <script>
         const btn: HTMLInputElement | null = document.querySelector("#send");
