@@ -22,21 +22,23 @@ if (!avatar.avatar)
     );
 
 async function fetchImage(url: string) {
-    return await (await fetch(url)).blob();
+    return await (await fetch(url).then(async (res) => {
+        return {
+            type: res.headers.get("Content-Type"),
+            blob: await res.blob()
+        }
+    }));
 }
-
-let type = avatar.avatar.substring(avatar.avatar.lastIndexOf(".") + 1);
-if (type == "jpg") type = "jpeg";
 
 let img = await fetchImage(avatar.avatar);
 
-if (img.size == 0) {
+if (img.blob.size == 0) {
     img = await fetchImage("https://http.cat/404");
 }
-return new Response(img, {
+return new Response(img.blob, {
     headers: {
-        "Content-Type": "image/" + type,
+        "Content-Type": img.type,
     },
-    status: img.size == 0?410:200
+    status: img.blob.size == 0?410:200
 });
 ---

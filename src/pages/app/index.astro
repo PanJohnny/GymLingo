@@ -225,9 +225,12 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
 
         <div class="incorrect" hidden>
             <h3>Špatně</h3>
-            <p>Zkus to znovu, nebo přeskoč otázku</p>
-            <a role="button" title="další úloha" class="next" href={nextLink}
-                >➡</a
+            <p>Zkuste to znovu, nebo se nechte podat</p>
+            <a
+                role="button"
+                title="nechat se podat"
+                class="nopeidk"
+                href="javascript:void(0)">?</a
             >
         </div>
 
@@ -324,7 +327,9 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                     c.hidden = false;
                     i.hidden = true;
                     idk.hidden = true;
-                    if (answer) answer.classList.add("correct");
+                    if (answer) {
+                        answer.disabled = true;
+                    }
                     help.hidden = true;
 
                     speakAnswer();
@@ -367,6 +372,28 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                         });
                 }
             });
+
+            const nopeidk = document.querySelector(".nopeidk");
+            if (nopeidk && nopeidk instanceof HTMLAnchorElement) {
+                nopeidk.addEventListener("click", async (e) => {
+                    // left click
+                    if (e.button == 0) {
+                        c.hidden = true;
+                        i.hidden = true;
+                        idk.hidden = false;
+
+                        inputArea.setAttribute("disabled", "true");
+                        speakAnswer();
+                        document
+                            .querySelectorAll(".next")
+                            .forEach((btn: HTMLInputElement) => {
+                                if (btn.checkVisibility()) {
+                                    btn.focus();
+                                }
+                            });
+                    }
+                });
+            }
 
             let voice;
             function loadSpeechSynthesis() {
@@ -589,7 +616,8 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
         margin-top: 0px;
     }
 
-    .next {
+    .next,
+    .nopeidk {
         position: absolute;
         right: 10px;
         padding: 0.5em;
