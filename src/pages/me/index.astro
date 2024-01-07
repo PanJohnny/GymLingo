@@ -20,28 +20,28 @@ if (!me.success) return Astro.redirect("/me/auth/login");
     </header>
     <main>
         <div class="segment">
-            <h1>Ahoj <span id="name">{me.username}</span></h1>
-            <img
-                src={"/api/v2/user/info/avatar/" + me.username}
-                alt="profilový obrázek"
-                id="icon"
-            />
+            <h2>Nastavení účtu</h2>
             <div>
-                <input
-                    type="url"
-                    name="image"
-                    id="img_url"
-                    placeholder="URL Obrázku"
+                <h3>Profilová fotografie</h3>
+                <img
+                    src={"/api/v2/user/info/avatar/" + me.username}
+                    alt="profilový obrázek"
+                    id="icon"
                 />
-                <input
-                    type="button"
-                    value="Změnit profilovku"
-                    id="change_pfp"
-                />
+                <div>
+                    <input
+                        type="url"
+                        name="image"
+                        id="img_url"
+                        placeholder="URL Obrázku"
+                    />
+                    <input
+                        type="button"
+                        value="Změnit profilovku"
+                        id="change_pfp"
+                    />
+                </div>
             </div>
-        </div>
-        <div class="segment">
-            <h2>Upravit údaje</h2>
             <div>
                 <h3>Uživatelské jméno:</h3>
                 <input
@@ -75,29 +75,61 @@ if (!me.success) return Astro.redirect("/me/auth/login");
                 />
                 <input type="button" value="Změnit heslo" id="password-btn" />
             </div>
-        </div>
-        <div class="segment">
-            <h2>Odhlašte se</h2>
-            <input type="button" value="Odhlásit se" id="logout" />
-        </div>
-        <div class="segment">
-            <h2>Vymažte svá data a svůj účet</h2>
-            <p>
-                Pokud chcete vymazat svoje data i svůj postup klikněte <a
-                    href="/me/auth/remove">zde</a
-                >.
-            </p>
-        </div>
-        {
-            me.admin ? (
+            <div>
+                <h3>Odhlašte se</h3>
+                <input type="button" value="Odhlásit se" id="logout" />
+            </div>
+            <div>
+                <h3>Vymažte svá data a svůj účet</h3>
                 <p>
-                    Nástroj administrátora{" "}
-                    <a href="/developer/dashboard" target="_blank">
-                        /developer/dashboard
-                    </a>
+                    Pokud chcete vymazat svoje data i svůj postup klikněte <a
+                        href="/me/auth/remove">zde</a
+                    >.
                 </p>
-            ) : undefined
-        }
+            </div>
+        </div>
+        <div class="segment">
+            <h2>Dostupnost</h2>
+            <div>
+                <h3>Používání</h3>
+                <p>Odpovědi odesíláte klávesou <kbd>Enter</kbd>. Pokud nevíte klikněte na možnost nevím.</p>
+            </div>
+            <div>
+                <h3>Odposlech</h3>
+                <p>
+                    Na některých zařízeních a v některých prohlížečích je
+                    dostupný odposlech. Můžete tak poslouchat, jak se vyslovují
+                    poslká slovíčka.
+                </p>
+                <p>
+                    Na vašem zařízení je tato funkce <span id="voice"
+                        >získávám informace...</span
+                    >
+                </p>
+            </div>
+            <div>
+                <h3>Motiv</h3>
+                <p>
+                    Tato webová stránka zjišťuje nastavení v prohlížeči, které
+                    udává jestli preferuje tmavý či světlý motiv.
+                </p>
+            </div>
+            <div>
+                <h3>JavaScript</h3>
+                <p>
+                    Aby tato webová aplikace mohla fungovat vyžaduje JavaScript.
+                </p>
+                <noscript><b>Prosím povolte ho!</b></noscript>
+            </div>
+            <div>
+                <h3>Cookies</h3>
+                <p>
+                    Tato stránka vyžaduje pro své fungování cookies. Ty používá
+                    k uchovávání přístupového klíče, který se využívá ke
+                    komunikaci se serverem.
+                </p>
+            </div>
+        </div>
         <div class="segment">
             <h2>Dokumenty</h2>
             <ul>
@@ -106,7 +138,19 @@ if (!me.success) return Astro.redirect("/me/auth/login");
                         >Podmínky ochrany soukromí</a
                     >
                 </li>
-                <li><a href="/slovnik" target="_blank">Všechna slovíčka</a></li>
+                <li>
+                    <a href="/slovnik" target="_blank">Všechna slovíčka</a>
+                </li>
+                {
+                    me.admin ? (
+                        <li>
+                            Nástroj administrátora{" "}
+                            <a href="/developer/dashboard" target="_blank">
+                                /developer/dashboard
+                            </a>
+                        </li>
+                    ) : undefined
+                }
             </ul>
         </div>
     </main>
@@ -218,6 +262,20 @@ if (!me.success) return Astro.redirect("/me/auth/login");
             location.reload();
         });
     }
+
+    // Dostupnost
+    function loadSpeechSynthesis() {
+        let voices = window.speechSynthesis.getVoices();
+        voice = voices.find((v) => v.lang == "pl-PL");
+        const out = document.querySelector("#voice");
+        if (voice) {
+            out.innerText = "dostupná! (model: " + voice.name + ")";
+        } else {
+            out.innerText = "nedostupná.";
+        }
+    }
+
+    loadSpeechSynthesis();
 </script>
 
 <style>
@@ -228,8 +286,7 @@ if (!me.success) return Astro.redirect("/me/auth/login");
     }
 
     main {
-        display: flex;
-        flex-direction: column;
+        display: block;
         margin: 2em;
     }
 
@@ -238,8 +295,15 @@ if (!me.success) return Astro.redirect("/me/auth/login");
     }
 
     .segment {
-        display: block;
-        margin-bottom: 1em;
+        display: inline-flex;
+        margin: 1em;
+        flex-direction: column;
+    }
+
+    @media (min-width: 1230px) {
+        .segment {
+            max-width: 30%;
+        }
     }
 
     input {
@@ -252,5 +316,9 @@ if (!me.success) return Astro.redirect("/me/auth/login");
 
     input[type="button"] {
         cursor: pointer;
+    }
+
+    #voice {
+        font-weight: bold;
     }
 </style>

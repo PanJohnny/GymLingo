@@ -181,8 +181,8 @@ export const connect = () => {
 
             const lesson = lessons.lessons[0];
 
-            if (lesson.polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() !=
-                polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()) {
+            if (lesson.polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[\?\!]/gm, "").toLowerCase() !=
+                polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[\?\!]/gm, "").toLowerCase()) {
                 return {
                     success: false,
                     message: "Špatná odpověď",

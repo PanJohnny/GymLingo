@@ -41,6 +41,7 @@ import UserInfo from "../components/UserInfo.astro";
     <ViewTransitions />
   </head>
   <body>
+    <div class="load-manager" transition:persist></div>
     <header transition:persist>
       <UserInfo />
       <Header1 />
@@ -97,6 +98,10 @@ import UserInfo from "../components/UserInfo.astro";
         text-decoration-color: var(--decoration);
         border-color: var(--dark) !important;
       }
+
+      :global(.background) {
+        background-color: var(--light);
+      }
     }
 
     @media screen and (prefers-color-scheme: dark) {
@@ -108,6 +113,10 @@ import UserInfo from "../components/UserInfo.astro";
       :global(*) {
         text-decoration-color: var(--decoration);
         border-color: var(--light) !important;
+      }
+
+      :global(.background) {
+        background-color: var(--dark);
       }
     }
 
@@ -176,5 +185,50 @@ import UserInfo from "../components/UserInfo.astro";
       width: 100%;
       text-align: center;
     }
+
+    .load-manager {
+      width: 0%;
+      display: block;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      background-color: #ff9770;
+      height: 3px;
+    }
   </style>
+
+  <script>
+
+    let loading = false;
+
+    // Trick the user into thinking that the loading is faster
+    document.addEventListener("astro:before-preparation", () => {
+      const manager:HTMLDivElement = document.querySelector(".load-manager");
+      const speed = 1;
+      let i = 0; // 10%
+      loading = true;
+      const func = () => {
+        if (i < 150 && loading) {
+          i++;
+          manager.style.width = i/1.5 + "%";
+          setTimeout(func, speed);
+        } else {
+          loading = false;
+        }
+      }
+
+      func();
+    });
+
+    document.addEventListener("astro:after-swap", () => {
+      const manager:HTMLDivElement = document.querySelector(".load-manager");
+      
+      loading = false;
+      manager.style.width = "100%";
+
+      setTimeout(() => {
+        manager.removeAttribute("style");
+      }, 1000);
+    });
+  </script>
 </html>

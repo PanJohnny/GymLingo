@@ -10,7 +10,7 @@ const err = (tit, des) => {
     ComponentProps = { err: tit, description: des };
 };
 
-const {auth, getLessons, end} = connect();
+const { auth, getLessons, end } = connect();
 
 if (
     !Astro.cookies.has("token") ||
@@ -35,6 +35,7 @@ let lesson = {
 };
 
 let firstImg: any;
+let nextImgUrl: any = "";
 
 if (!Astro.url.searchParams.has("g")) {
     err(
@@ -50,14 +51,29 @@ if (!Astro.url.searchParams.has("g")) {
         Astro.url.searchParams.get("edescription"),
     );
 } else {
-    let lessons = await getLessons(group);
+    let res = await getLessons(group);
     end();
 
-    if (!lessons.success || !lessons.lessons.length) {
+    if (!res.success || !res.lessons.length) {
         err("Cvičení neexistuje", "Skupina cvičení neexistuje :(");
     } else {
-        lessons = lessons.lessons;
+        const lessons = res.lessons;
         const l = lessons[index];
+
+        if (index + 1 < lessons.length) {
+            // Prefetch image to load it faster
+            const next = lessons[index + 1];
+
+            if (next) {
+                nextImgUrl =
+                    "/api/v2/image?q=" +
+                    encodeURI(
+                        next.czech.includes(";")
+                            ? next.czech.split(";")[0]
+                            : next.czech,
+                    );
+            }
+        }
 
         if (!l) {
             Component = FinishedOverlay;
@@ -67,17 +83,13 @@ if (!Astro.url.searchParams.has("g")) {
             };
         } else {
             lesson = l;
-            firstImg = await (
-                await fetch(
-                    Astro.url.origin +
-                        "/api/v2/image?q=" +
-                        encodeURI(
-                            lesson.czech.includes(";")
-                                ? lesson.czech.split(";")[0]
-                                : lesson.czech,
-                        ),
-                )
-            ).text();
+            firstImg =
+                "/api/v2/image?q=" +
+                encodeURI(
+                    lesson.czech.includes(";")
+                        ? lesson.czech.split(";")[0]
+                        : lesson.czech,
+                );
         }
     }
 }
@@ -113,67 +125,88 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
         data-id={lesson.id}
         data-type={lesson.type}
         data-polish={lesson.polish}
+        data-next-image={nextImgUrl}
     >
     </div>
 
     <main transition:animate="fade">
         <div id="input">
-            <div class="segment" hidden={lesson.type != "1"}>
-                <h2>Přeložte slovo</h2>
-                <div class="translate">
-                    <span class="floating-segment">{lesson.czech}</span>
+            {
+                lesson.type == "1" ? (
+                    <div class="segment">
+                        <h2>Přeložte slovo</h2>
+                        <div class="translate">
+                            <span class="floating-segment">{lesson.czech}</span>
 
-                    <input type="text" id="answer" class="floating-segment" />
-                </div>
-                <img src={firstImg} aria-hidden="true" loading="eager" />
-            </div>
-            <div class="segment" hidden={lesson.type != " 2"}>
-                <h2>Přiřaďte správný překlad ke slovům</h2>
-                <p>Využijte přetahování</p>
-                <div class="flex">
-                    <div class="left">
-                        {
-                            lesson.type == "2"
-                                ? lesson.czech.split(";").map((t) => (
-                                      <div data-czech={t}>
-                                          {t}:{" "}
-                                          <span
-                                              class="answerbox"
-                                              id={encodeURIComponent("c" + t)}
-                                          />
-                                      </div>
-                                  ))
-                                : undefined
-                        }
-                    </div>
-                    <div class="right" id="elementsForFree">
-                        {
-                            lesson.type == "2"
-                                ? shuffle(lesson.polish.split(";")).map((t) => (
-                                      <div
-                                          class="floating-segment drag"
-                                          id={encodeURIComponent("p" + t)}
-                                      >
-                                          {t}
-                                      </div>
-                                  ))
-                                : undefined
-                        }
-                    </div>
-                    <div>
-                        <input
-                            type="button"
-                            value="✔"
-                            class="submit"
-                            title="Zkontrolovat"
+                            <input
+                                type="text"
+                                id="answer"
+                                class="floating-segment"
+                            />
+                        </div>
+                        <img
+                            src={firstImg}
+                            aria-hidden="true"
+                            loading="eager"
                         />
                     </div>
-                </div>
-                <img src={firstImg} aria-hidden="true" loading="eager" />
-            </div>
+                ) : lesson.type == "2" ? (
+                    <div class="segment">
+                        <h2>Přiřaďte správný překlad ke slovům</h2>
+                        <p>Využijte přetahování</p>
+                        <div class="flex">
+                            <div class="left">
+                                {lesson.type == "2"
+                                    ? lesson.czech.split(";").map((t) => (
+                                          <div data-czech={t}>
+                                              {t}:{" "}
+                                              <span
+                                                  class="answerbox"
+                                                  id={encodeURIComponent(
+                                                      "c" + t,
+                                                  )}
+                                              />
+                                          </div>
+                                      ))
+                                    : undefined}
+                            </div>
+                            <div class="right" id="elementsForFree">
+                                {lesson.type == "2"
+                                    ? shuffle(lesson.polish.split(";")).map(
+                                          (t) => (
+                                              <div
+                                                  class="floating-segment drag"
+                                                  id={encodeURIComponent(
+                                                      "p" + t,
+                                                  )}
+                                              >
+                                                  {t}
+                                              </div>
+                                          ),
+                                      )
+                                    : undefined}
+                            </div>
+                            <div>
+                                <input
+                                    type="button"
+                                    value="✔"
+                                    class="submit"
+                                    title="Zkontrolovat"
+                                />
+                            </div>
+                        </div>
+                        <img
+                            src={firstImg}
+                            aria-hidden="true"
+                            loading="eager"
+                        />
+                    </div>
+                ) : (
+                    "Tento typ lekce neexistuje, ale fakt nevím jak vidíte tenhle text."
+                )
+            }
         </div>
-
-        <input type="button" value="Nevím" class="help" />
+        <input type="button" value="Nevím" class="help background" />
     </main>
 
     <footer>
@@ -236,6 +269,15 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
             const i: HTMLDivElement = document.querySelector(
                 "footer > .incorrect",
             );
+
+            if (data["nextImage"]) {
+                console.log("Preloading next image...");
+                const image = new Image();
+                image.src = data["nextImage"];
+                image.addEventListener("load", (ev) => {
+                    console.log("Image succesfully preloaded!");
+                });
+            }
 
             if (data.type == 1) {
                 answer.addEventListener("keyup", async (e) => {
@@ -560,9 +602,9 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
         font-size: larger;
         outline: none;
         border: none;
-        background: none;
         cursor: pointer;
         width: min-content;
+        color: inherit;
         text-decoration: underline orangered;
     }
 
@@ -572,6 +614,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
 
     .correct {
         background-color: greenyellow;
+        color: black;
     }
 
     [hidden] {
@@ -598,5 +641,18 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
     .submit {
         border-radius: 12px;
         font-size: 3em;
+    }
+
+    /*
+    Phone keyboard
+    */
+    @media (max-height: 600px) {
+        .help {
+            position: absolute;
+            bottom: 2vh;
+            z-index: 2;
+            border: 1px solid;
+            border-radius: 15px;
+        }
     }
 </style>

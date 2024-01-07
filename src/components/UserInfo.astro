@@ -5,28 +5,28 @@ const token = Astro.cookies.has("token")
     ? Astro.cookies.get("token").value
     : undefined;
 const { getUser, end } = connect();
-let user:any = await getUser(token);
+let user: any = await getUser(token);
 if (!user.success)
     user = { icon_url: undefined, username: "Nastala chyba", admin: false };
 end();
 ---
 
-<div class="info">
-    <img
-        src={user.icon_url
-            ? user.icon_url
-            : "https://ui-avatars.com/api/?format=svg&name=" +
-              user.username.replaceAll(" ", "+")}
-        alt="profile icon"
-        height="50px"
-        width="50px"
-        id="usri-icon"
-    />
-    <a href="/me" style="text-decoration: none; color: inherit;"
-        ><div id="usri-name">{user.username}</div></a
-    >
-    <div class="isAdmin">{user.admin ? "Administrátor" : "Uživatel"}</div>
-</div>
+<a href="/me" style="text-decoration: none; color: inherit;">
+    <div class="info">
+        <img
+            src={user.icon_url
+                ? user.icon_url
+                : "https://ui-avatars.com/api/?format=svg&name=" +
+                  user.username.replaceAll(" ", "+")}
+            alt="profile icon"
+            height="50px"
+            width="50px"
+            id="usri-icon"
+        />
+        <div id="usri-name">{user.username}</div>
+        <div class="isAdmin">{user.admin ? "Administrátor" : "Uživatel"}</div>
+    </div>
+</a>
 
 <style>
     .info {
@@ -34,6 +34,12 @@ end();
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        max-width: 20%;
+        margin: 0.5em;
+        padding-left: 1em;
+    }
+
+    a {
         max-width: 20%;
         margin: 0.5em;
         padding-left: 1em;
