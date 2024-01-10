@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import UserInfo from "../../components/UserInfo.astro";
-import Header1 from "../../components/Header1.astro";
+import CommonHeader from "components/CommonHeader.astro";
 import { connect } from "../../util/database";
 
 if (!Astro.cookies.has("token")) return Astro.redirect("/me/auth/login");
@@ -13,11 +13,7 @@ if (!me.success) return Astro.redirect("/me/auth/login");
 ---
 
 <Layout title="Váš profil" description="Informace o">
-    <header>
-        <UserInfo />
-        <h1 style="font-size: larger;">Profil</h1>
-        <Header1 />
-    </header>
+    <CommonHeader title="Profil" />
     <main>
         <div class="segment">
             <h2>Nastavení účtu</h2>

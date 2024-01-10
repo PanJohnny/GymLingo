@@ -1,6 +1,6 @@
 ---
 import { ViewTransitions } from "astro:transitions";
-import Header1 from "../components/Header1.astro";
+import CommonHeader from "components/CommonHeader.astro";
 import UserInfo from "../components/UserInfo.astro";
 ---
 
@@ -42,10 +42,7 @@ import UserInfo from "../components/UserInfo.astro";
   </head>
   <body>
     <div class="load-manager" transition:persist></div>
-    <header transition:persist>
-      <UserInfo />
-      <Header1 />
-    </header>
+    <CommonHeader />
     <slot />
     <footer>
       <div class="footer-container">
@@ -88,6 +85,10 @@ import UserInfo from "../components/UserInfo.astro";
       --decoration: #ff9770;
     }
 
+    body {
+      margin: 0px;
+    }
+
     @media screen and (prefers-color-scheme: light) {
       :root {
         background-color: var(--light);
@@ -122,43 +123,43 @@ import UserInfo from "../components/UserInfo.astro";
 
     @media (max-width: 400px) {
       :root {
-        font-size: .9em;
+        font-size: 0.9em;
       }
     }
 
     @media (max-width: 350px) {
       :root {
-        font-size: .8em;
+        font-size: 0.8em;
       }
     }
 
     @media (max-width: 305px) {
       :root {
-        font-size: .7em;
+        font-size: 0.7em;
       }
     }
 
     @media (max-width: 274px) {
       :root {
-        font-size: .6em;
+        font-size: 0.6em;
       }
     }
 
     @media (max-width: 260px) {
       :root {
-        font-size: .5em;
+        font-size: 0.5em;
       }
     }
 
     @media (max-width: 205px) {
       :root {
-        font-size: .4em;
+        font-size: 0.4em;
       }
     }
 
     @media (max-width: 180px) {
       :root {
-        font-size: .3em;
+        font-size: 0.3em;
       }
     }
 
@@ -240,31 +241,30 @@ import UserInfo from "../components/UserInfo.astro";
   </style>
 
   <script>
-
     let loading = false;
 
     // Trick the user into thinking that the loading is faster
     document.addEventListener("astro:before-preparation", () => {
-      const manager:HTMLDivElement = document.querySelector(".load-manager");
+      const manager: HTMLDivElement = document.querySelector(".load-manager");
       const speed = 1;
       let i = 0; // 10%
       loading = true;
       const func = () => {
         if (i < 150 && loading) {
           i++;
-          manager.style.width = i/1.5 + "%";
+          manager.style.width = i / 1.5 + "%";
           setTimeout(func, speed);
         } else {
           loading = false;
         }
-      }
+      };
 
       func();
     });
 
     document.addEventListener("astro:after-swap", () => {
-      const manager:HTMLDivElement = document.querySelector(".load-manager");
-      
+      const manager: HTMLDivElement = document.querySelector(".load-manager");
+
       loading = false;
       manager.style.width = "100%";
 

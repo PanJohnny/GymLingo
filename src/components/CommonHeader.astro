@@ -1,0 +1,42 @@
+---
+import UserInfo from './UserInfo.astro';
+
+interface Props {
+    title?: string,
+    noAuth?: boolean;
+}
+
+const {title, noAuth} = Astro.props;
+
+const center = !title && noAuth;
+---
+
+<header style={"justify-content:" + (center?"center":"space-between") + ";"} transition:persist>
+    {!noAuth?<UserInfo />:undefined}
+    {title?<h2>{title}</h2>:undefined}
+    <h1>
+        <a href="/" class="underline-yellow"
+            ><span class="underline-blue">Gym</span><span class="underline-yellow"
+                >Lingo</span
+            ></a>
+    </h1>
+</header>
+
+<style>
+    header {
+        display: flex;
+        margin: 1em;
+        flex-direction: row;
+    }
+    a {
+        color: inherit;
+    }
+
+    .underline-blue {
+        text-decoration: underline solid #20499f;
+    }
+
+    .underline-yellow {
+        text-decoration: underline solid #fac020;
+    }
+</style>

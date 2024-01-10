@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { connect } from "../../util/database";
-import Header1 from "../../components/Header1.astro";
+import CommonHeader from "components/CommonHeader.astro";
 
 const {getLessons, end} = connect();
 const lessons = await getLessons("*");
@@ -14,10 +14,7 @@ if (!lessons.success) {
 ---
 
 <Layout title="GymLingo" description="GymLingo - základy polštiny">
-    <header>
-        <h2>Přehled slovíček</h2>
-        <Header1 />
-    </header>
+    <CommonHeader noAuth title="Přehled slovíček"/>
     <main>
         <p>
            Tato stránka obsahuje všechna slova v databázy. Některé se mohou vyskytnout několikrát. Pokud najdete něco chybného prosím nahlašte to na GitHubu.

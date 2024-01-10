@@ -1,10 +1,10 @@
 ---
-import Header1 from "../../../components/Header1.astro";
+import CommonHeader from "components/CommonHeader.astro";
 import Layout from "../../../layouts/Layout.astro";
 ---
 
 <Layout title="Registrujte se" description="Registrujte se do svého profilu">
-    <header><Header1 /></header>
+    <header><CommonHeader noAuth /></header>
     <main>
         <div>
             <h2>Registrujte se prosím</h2>
@@ -24,6 +24,13 @@ import Layout from "../../../layouts/Layout.astro";
                     name="password"
                     id="usri-password"
                     placeholder="Heslo"
+                    pattern=".{6,25}"
+                />
+                <input
+                    type="password"
+                    name="password"
+                    id="usri-password-r"
+                    placeholder="Zopakujte heslo"
                     pattern=".{6,25}"
                 />
             </div>
@@ -51,9 +58,13 @@ import Layout from "../../../layouts/Layout.astro";
 
     const user = document.querySelector("#usri-username");
     const pass = document.querySelector("#usri-password");
+    const repeat = document.querySelector("#usri-password-r");
 
     function checkFields() {
-        if (
+        if (repeat.value != pass.value) {
+            alert("Heslo a zopakované heslo musí byt stejné");
+            return;
+        } else if (
             // @ts-ignore
             user.value.length < 3 || // @ts-ignore
             pass.value.length < 6 || // @ts-ignore
@@ -86,14 +97,19 @@ import Layout from "../../../layouts/Layout.astro";
                         username: user.value,
                         password: pass.value,
                     }),
-                }).then(res => res.json()).then(json => {
-                    if (json.success) {
-                        setCookie("token", json.token, 1);
-                        location.href = "/?welcome";
-                    } else {
-                        alert("Nepodařilo se Vás registrovat. Důvod: " + json.message);
-                    }
-                });
+                })
+                    .then((res) => res.json())
+                    .then((json) => {
+                        if (json.success) {
+                            setCookie("token", json.token, 1);
+                            location.href = "/?welcome";
+                        } else {
+                            alert(
+                                "Nepodařilo se Vás registrovat. Důvod: " +
+                                    json.message,
+                            );
+                        }
+                    });
             }
         });
     }

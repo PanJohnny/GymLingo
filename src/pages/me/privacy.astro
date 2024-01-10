@@ -1,5 +1,5 @@
 ---
-import Header1 from "../../components/Header1.astro";
+import CommonHeader from "components/CommonHeader.astro";
 import Layout from "../../layouts/Layout.astro";
 ---
 
@@ -7,14 +7,8 @@ import Layout from "../../layouts/Layout.astro";
     title="Podmínky ochrany soukromí"
     description="Podmínky ochrany soukromí aplikace GymLingo"
 >
-    <header><Header1 /></header>
+    <header><CommonHeader noAuth title="Soukromí"/></header>
     <main>
-        <p>
-            Prosím mějte napaměti, že toto je pouze studentský projekt. Nevím
-            jak moc právně závazné jsou tyto podmínky, spíše jsem je vytvořil k
-            informování. Vaše data jsou bezpečná a heslo je zašifrované pomocí
-            moderního algoritmu.
-        </p>
         <h1>Podmínky ochrany soukromí</h1>
         <p>
             Provozovatel stránky nemá způsob kontaktování uživatele a neuchovává
@@ -56,18 +50,7 @@ import Layout from "../../layouts/Layout.astro";
             </p>
         </div>
         <div>
-            <h2>API</h2>
-            <p>
-                API, neboli aplikační programové rozhraní, je dostupné pro
-                všechny uživatele. Pro dokumentaci se podívejte na: <a
-                    href="/developer/docs"
-                    target="_blank"
-                    rel="noopener noreferrer">/developer/docs</a
-                >
-            </p>
-        </div>
-        <div>
-            <h2>Zdrojový kód</h2>
+            <h2>Softwarová licence</h2>
             <p>
                 Celkový zdrojový kód aplikace je dostupný online: <a
                     href="https://github.com/PanJohnny/GymLingo"

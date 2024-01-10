@@ -2,7 +2,7 @@
 import GroupShowcase from "../components/GroupShowcase.astro";
 import UserInfo from "../components/UserInfo.astro";
 import Layout from "../layouts/Layout.astro";
-import Header1 from "../components/Header1.astro";
+import CommonHeader from "../components/CommonHeader.astro";
 import { isValidUser } from "../util/database";
 
 if (
@@ -13,57 +13,7 @@ if (
 ---
 
 <Layout title="GymLingo" description="GymLingo - základy polštiny">
-	<header>
-		<UserInfo />
-		{
-			Astro.url.searchParams.has("welcome") ? (
-				<>
-					<dialog style="color: inherit;" class="background">
-						<input type="button" style="font-size: 1.2em;position: fixed;top: 10px; right: 10px; color: inherit;" class="background" value="Zavřít" onclick="document.querySelector('dialog').close()"></input>
-						<h1>Vítejte na stránce!</h1>
-						<p>Vítejte na stránce zde je stručný návod.</p>
-						<h2>Využití</h2>
-						<p>
-							Jsou dva typy úloh: psací, přetahovací. V psací
-							úloze máte za úkol napsat polsky{" "}
-							{"(bez diakritiky a znamének)"} překlad. V
-							přetahovací přetáhnout k sobě správné dvojice.
-						</p>
-						<h2>Odesílání</h2>
-						<p>
-							V případě přetahovacích úloh klikněte na tlačítko s
-							fajkou. Pro úlohy psací platí toto:
-						</p>
-						<div style="text-align: center;">
-							<img
-								src="/help/desktop.png"
-								alt="screenshot webu na počítači"
-								style="max-height: 400px; max-width: 80vw;"
-							/>
-						</div>
-						<p>
-							V tomto případě do volného políčka napíšete váš
-							překlad a potvrdíte ho klávesou <kbd>Enter</kbd>.
-						</p>
-						<h3>Ukázka na telefonu</h3>
-						<div style="text-align: center;">
-							<video width="auto" height="600px" controls>
-								<source
-									src="/help/phone.mp4"
-									type="video/mp4"
-								/>
-								Váš prohlížeč nepodporuje video :{"("}
-							</video>
-						</div>
-					</dialog>
-					<script>
-						document.querySelector("dialog").showModal();
-					</script>
-				</>
-			) : undefined
-		}
-		<Header1 />
-	</header>
+	<CommonHeader />
 	<main>
 		<nav>
 			<a href="/slovnik">Veškerá evidovaná slovíčka naleznete zde</a>
