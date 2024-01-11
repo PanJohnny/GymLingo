@@ -1,0 +1,12 @@
+---
+import CommonHeader from "components/CommonHeader.astro";
+import Layout from "../layouts/Layout.astro"
+---
+
+<Layout title="404 stránka nenalezena" description="Na této URL adrese nebyla nalezena žádná stránka">
+    <CommonHeader noAuth title="Stránka nenalezena" />
+    <main style="text-align: center;">
+        <p>Na hledané adrese se nic nenachází.</p>
+        <a href="/">Domů</a>
+    </main>
+</Layout>

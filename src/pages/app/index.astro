@@ -17,7 +17,7 @@ if (
     !(await auth(Astro.cookies.get("token").value)).success
 ) {
     end();
-    return Astro.redirect("/me/auth/login");
+    return Astro.redirect("/me/auth/login?reffer="+Astro.request.url);
 }
 
 const group = Astro.url.searchParams.get("g");

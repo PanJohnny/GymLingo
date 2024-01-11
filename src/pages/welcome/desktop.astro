@@ -1,0 +1,141 @@
+---
+import Layout from "layouts/Layout.astro";
+import CommonHeader from "components/CommonHeader.astro";
+import { isValidUser } from "util/database";
+import TutorialStep from "components/TutorialStep.astro";
+
+if (
+    !Astro.cookies.has("token") ||
+    !(await isValidUser(Astro.cookies.get("token").value))
+)
+    return Astro.redirect("/me/auth/login?reffer=" + Astro.request.url);
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <TutorialStep
+        number={0}
+        title="Centrum účtu"
+        querySelector="a[href='/me']"
+        x="right"
+        y="bottom"
+    >
+        <p>
+            Kliknutím na tuto oblast můžete otevřít centrum účtu. V něm si je
+            možné upravit údaje, zjistit dostuponost některých funkcí aplikace,
+            ...
+        </p>
+    </TutorialStep>
+    <TutorialStep
+        number={1}
+        title="Hlavní nadpis"
+        querySelector="header > h1"
+        x="left"
+        y="bottom"
+    >
+        <p>
+            Kliknutím na hlavní nadpis se můžete kdykoliv vrátit na hlavní
+            stránku.
+        </p>
+    </TutorialStep>
+    <TutorialStep
+        number={2}
+        title="Zadávání"
+        querySelector="#wholeTranslate"
+        x="right"
+        y="centre"
+    >
+        <p>
+            V levé bublině se zobrazí slovo v češtině a vaším úkolem je ho pak
+            přeložit do polštiny. Diakritika a speciální symboly nejsou potřeba
+            zadávat. Své rozhodnutí <b>odešlete klávesou <kbd>Enter</kbd></b>.
+        </p>
+    </TutorialStep>
+    <CommonHeader />
+    <main>
+        <div class="segment" id="wholeTranslate">
+            <h2>Přeložte slovo</h2>
+            <div class="translate">
+                <span class="floating-segment">{"Ovce"}</span>
+
+                <input
+                    type="text"
+                    id="answer"
+                    class="floating-segment"
+                    lang="pl"
+                    value="owca"
+                />
+            </div>
+            <div class="imageContainer">
+                <img
+                    src={"/api/v2/image?q=ovce"}
+                    aria-hidden="true"
+                    loading="eager"
+                />
+            </div>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    main {
+        display: flex;
+        margin: 2em;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    :global(main > *) {
+        margin-bottom: 2em;
+    }
+
+    .task {
+        font-size: 3rem;
+    }
+
+    .floating-segment {
+        width: fit-content;
+        padding: 0.3em;
+        border: 1px solid;
+        border-radius: 12px;
+        font-size: larger;
+        margin: 10px;
+    }
+
+    .container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 2em;
+        margin: 2em;
+        margin-top: 0em;
+    }
+
+    .answer {
+        justify-content: end;
+        width: 50%;
+    }
+
+    .imageContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    img {
+        border-radius: 12px;
+        max-width: 90vw;
+        max-height: 500px;
+    }
+
+    .translate {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+</style>

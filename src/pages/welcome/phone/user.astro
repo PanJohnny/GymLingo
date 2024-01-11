@@ -1,0 +1,37 @@
+---
+import Layout from "layouts/Layout.astro";
+import UserInfo from "components/UserInfo.astro";
+import { isValidUser } from "util/database";
+
+if (
+    !Astro.cookies.has("token") ||
+    !(await isValidUser(Astro.cookies.get("token").value))
+)
+    return Astro.redirect("/me/auth/login?reffer=" + Astro.request.url);
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <main>
+        <h1>Průvodce aplikací</h1>
+        <h2>Uživatelské centrum</h2>
+        <UserInfo />
+        <p>
+            Kliknutím na uživatelské jméno či obrázek můžete otevřít centrum
+            účtu. V něm si je možné upravit údaje, zjistit dostuponost některých
+            funkcí aplikace, ...
+        </p>
+        <a href="/welcome/phone/title">Další ➡</a>
+    </main>
+</Layout>
+
+<style>
+    main {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: calc(100% - 2em);
+        height: 90vh;
+        padding: 1em;
+    }
+</style>

@@ -1,0 +1,67 @@
+---
+import Layout from "layouts/Layout.astro";
+import CommonHeader from "components/CommonHeader.astro";
+import { isValidUser } from "util/database";
+
+if (
+    !Astro.cookies.has("token") ||
+    !(await isValidUser(Astro.cookies.get("token").value))
+)
+    return Astro.redirect("/me/auth/login");
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <CommonHeader />
+    <main>
+        <h2>Vítejte na stránce</h2>
+        <p>
+            Tato webová stránka vznikala několik měsíců a vytvořil ji
+            jednotlivec. Vyráběl jsem ji v rámci projektů na Gymnáziu
+            Litoměřická a má za úkol fungovat jako jednoduchý edukační nástroj.
+        </p>
+        <h2>Návody</h2>
+        <p>
+            Podívejte se jak s čím vším můžete interagovat a jak vyplňovat pole interaktivním způsobem.
+            <ul>
+                <li><a href="/welcome/phone/user">Verze pro telefony a tablety.</a></li>
+                <li><a href="/welcome/desktop">Verze pro větší zařízení, např. počítače a notebooky. Minimální doporučovaná displeje šířka: 24cm.</a></li>
+            </ul>
+        </p>
+        <h2>Obrázky a videa</h2>
+        <div class="media">
+            <img src="/help/desktop.png" alt="screenshot desktopového rozložení">
+            <p>Na obrázku vidíte jak vypadá tato aplikace na počítači.</p>
+            <video controls src="/help/phone.mp4"></video>
+            <p>Video používání na telefonu</p>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    main {
+        display: flex;
+        margin: 2em;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    :global(main > *) {
+        margin-bottom: 2em;
+    }
+
+    img, video {
+        max-width: 80vw;
+        max-height: 400px;
+    }
+
+    .media {
+        text-align: center;
+    }
+</style>

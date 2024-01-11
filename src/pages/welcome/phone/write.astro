@@ -1,0 +1,110 @@
+---
+import Layout from "layouts/Layout.astro";
+import Header1 from "components/Header1.astro";
+import { isValidUser } from "util/database";
+
+if (
+    !Astro.cookies.has("token") ||
+    !(await isValidUser(Astro.cookies.get("token").value))
+)
+    return Astro.redirect("/me/auth/login?reffer=" + Astro.request.url);
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <main>
+        <h1>Průvodce aplikací</h1>
+        <h2>Vyplňování slovíček</h2>
+        <div class="segment" id="wholeTranslate">
+            <h2>Přeložte slovo</h2>
+            <div class="translate">
+                <span class="floating-segment">{"Ovce"}</span>
+
+                <input
+                    type="text"
+                    id="answer"
+                    class="floating-segment"
+                    lang="pl"
+                    value="owca"
+                />
+            </div>
+            <div class="imageContainer">
+                <img
+                    src={"/api/v2/image?q=ovce"}
+                    aria-hidden="true"
+                    loading="eager"
+                />
+            </div>
+        </div>
+        <p>
+            V levé bublině se zobrazí slovo v češtině a vaším úkolem je ho pak
+            přeložit do polštiny. Diakritika a speciální symboly nejsou potřeba
+            zadávat. Své rozhodnutí <b>odešlete klávesou <kbd>Enter</kbd></b>.
+        </p>
+        <p>Průvodce dokončen! <a href="/">Vrátit se na hlavní obrazovku</a></p>
+    </main>
+</Layout>
+
+<style>
+    main {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: calc(100% - 2em);
+        height: 90vh;
+        padding: 1em;
+    }
+
+    .segment {
+        display: flex;
+        margin: 2em;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .task {
+        font-size: 3rem;
+    }
+
+    .floating-segment {
+        width: fit-content;
+        padding: 0.3em;
+        border: 1px solid;
+        border-radius: 12px;
+        font-size: larger;
+        margin: 10px;
+    }
+
+    .container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 2em;
+        margin: 2em;
+        margin-top: 0em;
+    }
+
+    .answer {
+        justify-content: end;
+        width: 50%;
+    }
+
+    .imageContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    img {
+        border-radius: 12px;
+        max-width: 90vw;
+        max-height: 500px;
+    }
+
+    .translate {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+</style>

@@ -1,11 +1,21 @@
 ---
 import CommonHeader from "components/CommonHeader.astro";
 import Layout from "../../../layouts/Layout.astro";
+
+let reffer = "/";
+
+if (Astro.url.searchParams.has("reffer")) {
+    const r = Astro.url.searchParams.get("reffer");
+    
+    if (r.startsWith("/") || r.startsWith(Astro.url.origin)) {
+        reffer = r;
+    }
+}
 ---
 
 <Layout title="GymLingo" description="GymLingo - základy polštiny">
     <CommonHeader noAuth />
-    <main>
+    <main data-reffer={reffer}>
         <div>
             <h2>Přihlašte se prosím</h2>
             <p>K používání této aplikace potřebujete účet.</p>
@@ -93,7 +103,7 @@ import Layout from "../../../layouts/Layout.astro";
                 localStorage.setItem("username", stuff.username);
                 setCookie("token", stuff.token, 7);
 
-                location.href = "/";
+                location.href = document.querySelector("main").dataset.reffer;
             }
         });
     }

@@ -1,0 +1,155 @@
+---
+interface Props {
+    number: number;
+    querySelector: string;
+    title: string;
+    x?: string;
+    y?: string;
+}
+
+const { number, querySelector, title, x, y } = Astro.props;
+---
+
+<div
+    class="tutorial-step background"
+    data-step-number={number}
+    data-step-target={querySelector}
+    hidden={number != 0}
+    data-step-current={number == 0}
+    data-step-x={x}
+    data-step-y={y}
+>
+    <h3>{title}</h3>
+    <div><slot /></div>
+    <div class="foot">
+        <div class="number">{number + 1}.</div>
+        <input type="button" value="Další" class="next" />
+    </div>
+</div>
+
+<style>
+    .tutorial-step {
+        position: absolute;
+        display: flex;
+        max-width: 20vw;
+        flex-direction: column;
+        border: 1px solid;
+        padding: 0.5em;
+        border-radius: 15px;
+        z-index: 5;
+    }
+
+    input {
+        all: unset;
+        border: 1px solid;
+        padding: 5px;
+        border-radius: 15%;
+        cursor: pointer;
+        background-color: white;
+        color: black;
+    }
+
+    input:hover {
+        background-color: bisque;
+    }
+
+    .foot {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .number {
+        font-size: 20pt;
+    }
+
+    [hidden] {
+        display: none;
+    }
+
+    :global(.blur) {
+        filter: blur(10px);
+    }
+</style>
+
+<script>
+    function prepare() {
+        const step: HTMLDivElement = document.querySelector(
+            "[data-step-current]",
+        );
+        const num = step.dataset.stepNumber;
+        const target: HTMLElement = document.querySelector(
+            step.dataset.stepTarget,
+        );
+        console.log(num + ": " + target);
+
+        const rec = target.getBoundingClientRect();
+        const sr = step.getBoundingClientRect();
+
+        let x = 0;
+        let y = 0;
+
+        const sx = step.dataset.stepX;
+        const sy = step.dataset.stepY;
+
+        if (sx == "left") {
+            x = rec.left - sr.width;
+        } else if (sx == "right") {
+            x = rec.left + rec.width;
+        } else {
+            x = rec.left;
+        }
+
+        if (sy == "top") {
+            y = rec.top - sr.height;
+        } else if (sy == "bottom") {
+            y = rec.top + rec.height;
+        } else {
+            y = rec.top;
+        }
+
+        step.style.top = y + "px";
+        step.style.left = x + "px";
+        target.style.border = "1px solid";
+        target.style.backgroundColor = "yellowgreen";
+        target.style.padding = "10px";
+        target.style.filter = "blur(-10px)";
+
+        document.querySelectorAll("*").forEach((el) => {
+            const noblur = ["HTML", "HEADER", "FOOTER", "BODY", "MAIN"];
+            if (
+                el != target &&
+                el != step &&
+                !step.contains(el) &&
+                !target.contains(el) &&
+                !noblur.includes(el.tagName)
+            ) {
+                el.classList.add("blur");
+            }
+        });
+
+        step.querySelector(".next").addEventListener("click", () => {
+            const nn = parseInt(num) + 1;
+            const next: HTMLElement = document.querySelector(
+                ".tutorial-step[data-step-number='" + nn + "']",
+            );
+            if (!next) {
+                document.querySelectorAll(".blur").forEach((el) => {
+                    el.classList.remove("blur");
+                });
+                target.setAttribute("style", "");
+            } else {
+                next.hidden = false;
+                target.setAttribute("style", "");
+                step.removeAttribute("data-step-current");
+                next.setAttribute("data-step-current", "true");
+                document.querySelectorAll(".blur").forEach((el) => {
+                    el.classList.remove("blur");
+                });
+                prepare();
+            }
+            step.hidden = true;
+        });
+    }
+
+    prepare();
+</script>
