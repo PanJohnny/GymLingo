@@ -35,6 +35,11 @@ import Layout from "../../../layouts/Layout.astro";
                 />
                 <div class="cf-turnstile" data-sitekey={import.meta.env.CAPTCHA_KEY} data-callback="captchaValidated"></div>
                 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+                <script is:inline>
+                    function captchaValidated(token) {
+                        window.sessionStorage.setItem("captchaToken", token);
+                    }
+                </script>
             </div>
             <div>
                 <input type="button" value="Registrovat se" id="logon" />
@@ -115,12 +120,6 @@ import Layout from "../../../layouts/Layout.astro";
                     });
             }
         });
-    }
-</script>
-
-<script is:inline>
-    function captchaValidated(token) {
-        window.sessionStorage.setItem("captchaToken", token);
     }
 </script>
 

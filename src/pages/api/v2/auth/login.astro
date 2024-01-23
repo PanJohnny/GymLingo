@@ -7,14 +7,29 @@ if (Astro.request.method != "POST") return response.methodNotAllowed;
 
 try {
     const json = await Astro.request.json();
-    
-    if (!json.hasOwnProperty("username") || !json.hasOwnProperty("password")) {  
+    if (!json.username || !json.password || !json.captcha) {
         return response.badRequest;
     }
 
     if (!/.{3,25}/g.test(json.username) || !/.{6,25}/g.test(json.password)) {
         return response.badRequest;
     }
+
+    let formData = new FormData();
+	formData.append('secret', import.meta.env.CAPTCHA_SECRET);
+	formData.append('response', json.captcha);
+
+	const url = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+	const result = await fetch(url, {
+		body: formData,
+		method: 'POST',
+	});
+
+    const outcome = await result.json();
+    
+	if (!outcome.success) {
+		return response.generic({success: false, message: "Captcha failed"}, 401);
+	}
 
     const {login, end} = connect();
     const res = await login(json.username, json.password);

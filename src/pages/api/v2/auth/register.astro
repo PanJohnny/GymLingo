@@ -26,7 +26,6 @@ try {
 	});
 
     const outcome = await result.json();
-    console.log(outcome);
     
 	if (!outcome.success) {
 		return response.generic({success: false, message: "Captcha failed"}, 401);
