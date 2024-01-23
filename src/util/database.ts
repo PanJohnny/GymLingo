@@ -505,7 +505,7 @@ export const connect = () => {
             try {
                 const updateFields = [];
                 const updateValues = [];
-        
+
                 if (czech !== undefined && czech !== null) {
                     updateFields.push('czech = ?');
                     updateValues.push(czech);
@@ -515,48 +515,48 @@ export const connect = () => {
                     updateFields.push('\`group\` = ?');
                     updateValues.push(group);
                 }
-        
+
                 if (polish !== undefined && polish !== null) {
                     updateFields.push('polish = ?');
                     updateValues.push(polish);
                 }
-        
+
                 if (explanation !== undefined && explanation !== null) {
                     updateFields.push('explanation = ?');
                     updateValues.push(explanation);
                 }
-        
+
                 if (type !== undefined && type !== null) {
                     updateFields.push('type = ?');
                     updateValues.push(type);
                 }
-        
+
                 if (updateFields.length === 0) {
                     return {
                         success: false,
                         message: "Žádná pole k aktualizaci",
                     };
                 }
-        
+
                 updateValues.push(lessonId); // Push lessonId as the last value for WHERE clause
-        
+
                 // Construct the SET part of the SQL query based on the provided fields
                 const setClause = updateFields.join(', ');
-        
+
                 // Begin transaction for safe update operation
                 await connection.beginTransaction();
-        
+
                 const updateQuery = `UPDATE lessons SET ${setClause} WHERE id = ?`;
-        
+
                 // Update the lesson in the lessons table
                 await connection.query(
                     updateQuery,
                     updateValues
                 );
-        
+
                 // Commit the transaction if successful
                 await connection.commit();
-        
+
                 return {
                     success: true,
                     message: "Lekce byla úspěšně aktualizována",
@@ -564,10 +564,10 @@ export const connect = () => {
             } catch (error) {
                 // Rollback the transaction in case of any errors
                 await connection.rollback();
-        
+
                 // Log the error for debugging
                 console.error("Chyba při aktualizaci lekce:", error);
-        
+
                 // Return error message
                 return {
                     success: false,
@@ -670,11 +670,44 @@ export const connect = () => {
                     message: "Chyba při získávání uživatelských informací"
                 };
             }
+        }, getUserByName: async (username) => {
+            try {
+                const [rows] = await connection.query(`
+                    SELECT id, username, icon_url, admin 
+                    FROM users 
+                    WHERE username = ?
+                `, [username]);
+
+
+
+                // @ts-ignore
+                if (rows.length > 0) {
+                    const user = rows[0];
+                    return {
+                        success: true,
+                        id: user.id,
+                        username: user.username,
+                        icon_url: user.icon_url,
+                        admin: user.admin
+                    };
+                } else {
+                    return {
+                        success: false,
+                        message: "Uživatel nebyl nalezen"
+                    };
+                }
+            } catch (err) {
+                console.error("Error getting user:", err);
+                return {
+                    success: false,
+                    message: "Chyba při získávání uživatelských informací"
+                };
+            }
         }, updateUserById: async (userId, username, icon_url, admin) => {
             try {
                 const updateFields = [];
                 const updateValues = [];
-        
+
                 if (username !== undefined && username !== null) {
                     updateFields.push('username = ?');
                     updateValues.push(username);
@@ -684,38 +717,38 @@ export const connect = () => {
                     updateFields.push('icon_url = ?');
                     updateValues.push(icon_url);
                 }
-        
+
                 if (admin !== undefined && admin !== null) {
                     updateFields.push('admin = ?');
                     updateValues.push(admin);
                 }
-        
+
                 if (updateFields.length === 0) {
                     return {
                         success: false,
                         message: "Žádná pole k aktualizaci",
                     };
                 }
-        
+
                 updateValues.push(userId); // Push userId as the last value for WHERE clause
-        
+
                 // Construct the SET part of the SQL query based on the provided fields
                 const setClause = updateFields.join(', ');
-        
+
                 // Begin transaction for safe update operation
                 await connection.beginTransaction();
-        
+
                 const updateQuery = `UPDATE users SET ${setClause} WHERE id = ?`;
-        
+
                 // Update the lesson in the lessons table
                 await connection.query(
                     updateQuery,
                     updateValues
                 );
-        
+
                 // Commit the transaction if successful
                 await connection.commit();
-        
+
                 return {
                     success: true,
                     message: "Uživatel byl úspěšně aktualizován",
@@ -723,16 +756,59 @@ export const connect = () => {
             } catch (error) {
                 // Rollback the transaction in case of any errors
                 await connection.rollback();
-        
+
                 // Log the error for debugging
                 console.error("Chyba při aktualizaci uživatele:", error);
-        
+
                 // Return error message
                 return {
                     success: false,
                     message: "Chyba při aktualizaci uživatele: " + error,
                 };
             }
+        }, getFinishedLessonsByUser: async (id: string) => {
+
+            // Perform a SELECT query to fetch finished lessons by user in a group
+            const [finishedLessons] = await connection.query(`
+            SELECT *
+            FROM lpu
+            WHERE user_id = ?        
+    `, [id]);
+
+            // @ts-ignore
+            if (!finishedLessons) {
+                return {
+                    success: true,
+                    finishedLessons: [],
+                    count: 0,
+                };
+            }
+
+            // @ts-ignore
+            const totalFinished = finishedLessons.length;
+            const [occurance, _] = await connection.query(`
+            SELECT \`group\`, COUNT(*) as occurrence_count
+            FROM lessons
+            GROUP BY \`group\`;
+            
+    `);
+
+            const [useOccurance, __] = await connection.query(`
+            SELECT \`group\`, COUNT(*) as occurrence_count
+FROM lpu
+WHERE user_id = ?
+GROUP BY \`group\`;
+
+            `, [id]);
+
+
+            return {
+                success: true,
+                lessons: finishedLessons,
+                count: totalFinished,
+                groupTotals: occurance,
+                userTotals: useOccurance
+            };
         }
     }
 

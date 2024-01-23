@@ -12,7 +12,7 @@ end();
 if (!me.success) return Astro.redirect("/me/auth/login");
 ---
 
-<Layout title="Váš profil" description="Informace o">
+<Layout title="Váš profil" description="Informace o uživateli">
     <CommonHeader title="Profil" />
     <main>
         <div class="segment">
@@ -133,6 +133,9 @@ if (!me.success) return Astro.redirect("/me/auth/login");
             <h2>Dokumenty</h2>
             <ul>
                 <li>
+                    <a href={"/user/" + me.username}>Váš přehled</a>
+                </li>
+                <li>
                     <a href="/me/privacy" target="_blank"
                         >Podmínky ochrany soukromí</a
                     >
@@ -141,7 +144,9 @@ if (!me.success) return Astro.redirect("/me/auth/login");
                     <a href="/slovnik" target="_blank">Všechna slovíčka</a>
                 </li>
                 <li>
-                    <a href="/welcome" target="_blank">Krátce o projektu a uvítání</a>
+                    <a href="/welcome" target="_blank"
+                        >Krátce o projektu a uvítání</a
+                    >
                 </li>
                 {
                     me.admin ? (

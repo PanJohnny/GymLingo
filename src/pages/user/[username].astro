@@ -1,0 +1,224 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import CommonHeader from "../../components/CommonHeader.astro";
+import { connect } from "../../util/database";
+
+const { username } = Astro.params;
+
+let user: any = {
+    success: true,
+    id: -1,
+    username: "Hledaný uživatel neexistuje",
+    icon_url: "",
+    admin: false,
+};
+
+let lessons: any;
+
+const { auth, getUserByName, end, getFinishedLessonsByUser } = connect();
+
+if (
+    !Astro.cookies.has("token") || // @ts-ignore
+    !(await auth(Astro.cookies.get("token").value)).success
+) {
+    end();
+    return Astro.redirect("/me/auth/login");
+}
+
+if (username) {
+    const u = await getUserByName(username);
+    if (u.success) {
+        user = u;
+        const l = await getFinishedLessonsByUser(u.id);
+        end();
+        if (l.success) lessons = l;
+    } else {
+        end();
+    }
+}
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <CommonHeader />
+    <main>
+        <div class="inline">
+            {
+                user.id == -1 ? undefined : (
+                    <img
+                        src={"/api/v2/user/info/avatar/" + user.username}
+                        alt="Profilový obrázek"
+                    />
+                )
+            }
+            <div class="name-container">
+                <h1>{user.username}</h1>
+                {user.admin ? <em>Administrátor</em> : undefined}
+                <p>
+                    <em>Možná uživatelská biografie, zatím placeholder.</em> Lorem
+                    ipsum dolor sit amet consectetur adipisicing elit.
+                </p>
+                {
+                    lessons && lessons.count > 0 ? (
+                        <h3>
+                            Celkem dokončeno {lessons.count} z{" "}
+                            {lessons.groupTotals
+                                .map((a) => a.occurrence_count)
+                                .reduce(
+                                    (accumulator, currentValue) =>
+                                        accumulator + currentValue,
+                                    0,
+                                )}{" "}
+                            lekcí
+                        </h3>
+                    ) : undefined
+                }
+            </div>
+        </div>
+        <h2>Hotové lekce</h2>
+        {
+            lessons ? (
+                lessons.count == 0 ? (
+                    "Žádné :("
+                ) : (
+                    <>
+                        <table id="dataTable">
+                            <thead>
+                                <th>Skupina</th>
+                                <th>Dokončeno</th>
+                                <th>%</th>
+                            </thead>
+                            {lessons.userTotals.map((data) => (
+                                <tr>
+                                    <td>{data.group}</td>
+                                    <td>{data.occurrence_count}</td>
+                                    <td>
+                                        {Math.round(
+                                            (data.occurrence_count /
+                                                lessons.groupTotals.find(
+                                                    (a) =>
+                                                        a.group == data.group,
+                                                ).occurrence_count) *
+                                                100,
+                                        )}
+                                        %
+                                    </td>
+                                </tr>
+                            ))}
+                        </table>
+                        <canvas id="pieChart" />
+                    </>
+                )
+            ) : (
+                "Chyba :("
+            )
+        }
+    </main>
+</Layout>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    main {
+        display: flex;
+        margin: 2em;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    img {
+        max-width: 200px;
+        max-height: 200px;
+        vertical-align: middle;
+        margin: 2em;
+        border-radius: 10px;
+    }
+
+    :global(main > *) {
+        margin-bottom: 2em;
+    }
+
+    .inline {
+        text-align: center;
+    }
+
+    .inline > * {
+        display: inline-block;
+    }
+
+    .name-container {
+        max-width: 500px;
+    }
+
+    table {
+        min-width: 60%;
+        max-width: 80%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        padding-bottom: 0.5em;
+        border-bottom: 2px solid black;
+        background-color: lightslategray;
+    }
+
+    thead,
+    tr {
+        padding: 0.2em;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+    }
+
+    tr:nth-child(even) {
+        background-color: lightgray;
+        color: black;
+    }
+
+    canvas {
+        max-height: 200px;
+        max-width: 400px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script is:inline>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Extract data from HTML table
+        const table = document.getElementById("dataTable");
+        if (!table)
+            return;
+        const labels = [];
+        const dataValues = [];
+
+        // Skip the header row and start from the second row
+        for (let i = 1; i < table.rows.length; i++) {
+            const category = table.rows[i].cells[0].innerText;
+            const value = parseFloat(table.rows[i].cells[1].innerText);
+
+            labels.push(category);
+            dataValues.push(value);
+        }
+
+        // Create pie chart
+        const ctx = document.getElementById("pieChart").getContext("2d");
+        new Chart(ctx, {
+            type: "pie",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        data: dataValues,
+                    },
+                ],
+            },
+        });
+    });
+</script>
