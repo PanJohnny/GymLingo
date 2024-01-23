@@ -61,16 +61,6 @@ import UserInfo from "../components/UserInfo.astro";
             rel="noopener noreferrer">GitHubu</a
           >.
         </div>
-        <a
-          href="https://www.gymlit.cz"
-          target="_blank"
-          rel="noopener noreferrer"
-          ><img
-            src={"/gymlit.png"}
-            alt="logo gymnázia Litoměřická"
-            class:list={["zm", "icon"]}
-          /></a
-        >
       </div>
     </footer></body
   >
@@ -184,23 +174,10 @@ import UserInfo from "../components/UserInfo.astro";
       display: block;
     }
 
-    .icon {
-      height: 4em;
-      width: auto;
-      float: inline-end;
-      transform: translateY(-4em);
-    }
-
     .wrapper {
       position: relative;
       bottom: 0px;
       width: 100%;
-    }
-
-    @media screen and (max-width: 920px) {
-      .icon {
-        display: none;
-      }
     }
 
     :global(h1 > a) {

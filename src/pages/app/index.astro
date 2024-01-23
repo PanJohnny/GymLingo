@@ -17,7 +17,7 @@ if (
     !(await auth(Astro.cookies.get("token").value)).success
 ) {
     end();
-    return Astro.redirect("/me/auth/login?reffer="+Astro.request.url);
+    return Astro.redirect("/me/auth/login?reffer=" + Astro.request.url);
 }
 
 const group = Astro.url.searchParams.get("g");
@@ -138,12 +138,21 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                         <div class="translate">
                             <span class="floating-segment">{lesson.czech}</span>
 
-                            <input
-                                type="text"
-                                id="answer"
-                                class="floating-segment"
-                                lang="pl"
-                            />
+                            <div class="floating-segment answer-f">
+                                <input type="text" id="answer" lang="pl" />
+                                <input
+                                    type="button"
+                                    value=""
+                                    title="Potvrdit"
+                                    class="submit inline-button"
+                                />
+                                <input
+                                    type="button"
+                                    value=""
+                                    title="Nevím"
+                                    class="help inline-button"
+                                />
+                            </div>
                         </div>
                         <div class="imageContainer">
                             <img
@@ -189,12 +198,18 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                                       )
                                     : undefined}
                             </div>
-                            <div>
+                            <div class="buttons">
                                 <input
                                     type="button"
-                                    value="✔"
-                                    class="submit"
-                                    title="Zkontrolovat"
+                                    value=""
+                                    title="Potvrdit"
+                                    class="submit inline-button"
+                                />
+                                <input
+                                    type="button"
+                                    value=""
+                                    title="Potvrdit"
+                                    class="help inline-button"
                                 />
                             </div>
                         </div>
@@ -211,7 +226,6 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                 )
             }
         </div>
-        <input type="button" value="Nevím" class="help background" />
     </main>
 
     <footer>
@@ -219,7 +233,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
             <h3>Správně</h3>
             <p class="explanation">{lesson.explanation}</p>
             <a role="button" title="další úloha" class="next" href={nextLink}
-                >➡</a
+                ></a
             >
         </div>
 
@@ -240,7 +254,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                 {lesson.czech} se polsky řekne {lesson.polish}
             </p>
             <a role="button" title="další úloha" class="next" href={nextLink}
-                >➡</a
+                ></a
             >
         </div>
     </footer>
@@ -287,6 +301,8 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                 });
             }
 
+            const submit: HTMLInputElement = document.querySelector(".submit");
+
             if (data.type == 1) {
                 answer.addEventListener("keyup", async (e) => {
                     if (e.key == "Enter") {
@@ -295,9 +311,11 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                         answer.classList.remove("incorrect");
                     }
                 });
+
+                submit.addEventListener("click", () => {
+                    checkValue(answer.value);
+                });
             } else if (data.type == 2) {
-                const submit: HTMLInputElement =
-                    document.querySelector(".submit");
                 submit.addEventListener("click", () => {
                     const a = Object.values(
                         document.querySelectorAll(".answerbox"),
@@ -327,6 +345,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                     c.hidden = false;
                     i.hidden = true;
                     idk.hidden = true;
+                    submit.hidden = true;
                     if (answer) {
                         answer.disabled = true;
                     }
@@ -641,8 +660,8 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
         text-decoration: underline orangered;
     }
 
-    .next:focus {
-        font-weight: 1000;
+    .next {
+        background: url("/icons/arrow-right-solid.svg") no-repeat center;
     }
 
     .correct {
@@ -683,17 +702,82 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
         font-size: 3em;
     }
 
-    /*
-    Phone keyboard
-    */
-    @media (max-height: 600px) {
-        .help {
-            position: absolute;
-            bottom: 2vh;
-            z-index: 2;
-            border: 1px solid;
-            border-radius: 15px;
-        }
+    input[type="text"] {
+        background: white;
+        outline: none;
+        border: none;
+        color: inherit;
+        display: inline;
+        max-width: 60%;
+    }
+
+    .answer-f {
+        display: flex;
+        background-color: white;
+        border-color: black;
+        color: black;
+        flex-direction: row;
+        padding: 0px;
+        overflow: hidden;
+        max-width: 40%;
+    }
+
+    .answer-f > input[type="text"] {
+        outline: none;
+        background: none;
+    }
+
+    .answer-f > * {
+        display: inline-block;
+        font-size: 1em;
+    }
+
+    .inline-button {
+        all: unset;
+        width: 2em;
+        background-size: 80% auto;
+        height: 100%;
+        padding: 0px;
+        margin: 0px;
+        border-left: 1px solid black !important;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .inline-button.submit {
+        background: url("/icons/check-solid.svg") no-repeat center;
+    }
+
+    .inline-button.help {
+        background: url("/icons/question-solid.svg") no-repeat center;
+    }
+
+    .icon {
+        max-height: 1em;
+        display: block;
+    }
+
+    .buttons > .inline-button {
+        border: unset;
+        background-color: white;
+        border: 1px solid black;
+        border-radius: 8px;
+        width: 1.5em;
+        height: 2em;
+        padding: 0.5em;
+        background-origin: content-box;
+    }
+
+    .inline-button.submit:hover {
+        background-color: greenyellow;
+    }
+
+    .inline-button.help:hover {
+        background-color: orange;
+    }
+
+    h2 {
+        text-align: center;
     }
 
     @media (max-height: 920px) and (min-width: 720px) {

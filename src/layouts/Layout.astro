@@ -44,13 +44,6 @@ const { title, description } = Astro.props as Props;
           >.
         </p>
       </div>
-      <a href="https://www.gymlit.cz" target="_blank" rel="noopener noreferrer"
-        ><img
-          src={"/gymlit.png"}
-          alt="logo gymnázia Litoměřická"
-          class:list={["icon", "zm"]}
-        /></a
-      >
     </div>
   </body>
 </html>
@@ -124,24 +117,10 @@ const { title, description } = Astro.props as Props;
     padding: 1em;
   }
 
-  .icon {
-    position: absolute;
-    height: 4em;
-    width: auto;
-    bottom: 10px;
-    right: 10px;
-  }
-
   .wrapper {
     position: relative;
     bottom: 0px;
     width: 100%;
-  }
-
-  @media screen and (max-width: 920px) {
-    .icon {
-      display: none;
-    }
   }
 
   :global(h1 > a) {
