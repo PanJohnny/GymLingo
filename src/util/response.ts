@@ -13,7 +13,7 @@ export const response = {
             }
         })
     },
-    err: (err:any) => {
+    err: (err: any) => {
         return new Response(JSON.stringify({
             success: false,
             reason: "Uncaught exception",
@@ -29,5 +29,7 @@ export const response = {
 }
 
 function r(code: number) {
-    return new Response(undefined, { status: code })
+    return new Response(JSON.stringify({
+        success: code == 200 || code == 201 ? true : false
+    }), { status: code });
 }

@@ -102,6 +102,7 @@ if (Astro.url.searchParams.has("reffer")) {
                     body: JSON.stringify({
                         username: user.value,
                         password: pass.value,
+                        captcha: sessionStorage.getItem("captchaToken")
                     }),
                 }).then((res) => res.json());
 
