@@ -13,7 +13,6 @@ pnpm-debug.log*
 # Package lock
 package-lock.json
 
-
 # environment variables
 .env
 .env.production
@@ -21,3 +20,6 @@ package-lock.json
 # macOS-specific files
 .DS_Store
 .vercel
+
+# VS Code
+.vscode/
