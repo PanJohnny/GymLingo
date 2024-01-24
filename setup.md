@@ -33,6 +33,8 @@ CREATE TABLE `users` (
 ```
 
 ## Enviroment proměnné
-Je potřeba mít tyto dvě proměnné:
+Je potřeba mít tyto proměnné:
  - `DATABASE_URL` url k vaší databázy s read and write povolením
  - `PIXABAY_TOKEN` token k [pixabay.com API](https://pixabay.com/api/docs/) pro získávání ilustračních obrázků
+ - `CAPTCHA_KEY` kód stránky ke CloudFlare Turnstile, pro testování: `1x00000000000000000000BB`
+ - `CAPTCHA_SECRET` tajný kód ke CloudFlare Turnstile, pro testování: `1x0000000000000000000000000000000AA`
