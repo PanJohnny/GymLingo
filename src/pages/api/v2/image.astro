@@ -2,7 +2,12 @@
 if (Astro.request.method != "GET")
     return new Response(undefined, 405);
 
-const query = Astro.url.searchParams.get("q");
+let query = Astro.url.searchParams.get("q");
+
+if (query.includes(" ")) {
+    const split = query.split(" ");
+    query = split[split.length - 1];
+}
 try {
     const json = await fetch(`https://pixabay.com/api/?key=${import.meta.env.PIXABAY_TOKEN}&q=${encodeURIComponent(query)}&image_type=photo&lang=cs`).then(res => res.json());
     return new Response(await fetch(json.hits[0].webformatURL).then(res => res.blob()), {headers: {"Cache-Control": "max-age=85000", "Content-Type": "image/jpeg"}}); // about a day

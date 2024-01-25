@@ -15,7 +15,7 @@ let user: any = {
 
 let lessons: any;
 
-const { auth, getUserByName, end, getFinishedLessonsByUser } = connect();
+const { auth, getUserByName, end, getFinishedLessonsByUser, getLeaderboard } = connect();
 
 if (
     !Astro.cookies.has("token") || // @ts-ignore
@@ -25,11 +25,17 @@ if (
     return Astro.redirect("/me/auth/login");
 }
 
+let onLeaderboard = -1;
+
 if (username) {
     const u = await getUserByName(username);
     if (u.success) {
         user = u;
         const l = await getFinishedLessonsByUser(u.id);
+
+        const leaderboard:any = await getLeaderboard();
+        onLeaderboard = leaderboard.findIndex(l => l.user_id == u.id) + 1;
+        
         end();
         if (l.success) lessons = l;
     } else {
@@ -51,12 +57,9 @@ if (username) {
                 )
             }
             <div class="name-container">
+                {onLeaderboard > 0?(<span class="position" title="pozice uživatele na žebříčku">{"#" + onLeaderboard}</span>):undefined}
                 <h1>{user.username}</h1>
                 {user.admin ? <em>Administrátor</em> : undefined}
-                <p>
-                    <em>Možná uživatelská biografie, zatím placeholder.</em> Lorem
-                    ipsum dolor sit amet consectetur adipisicing elit.
-                </p>
                 {
                     lessons && lessons.count > 0 ? (
                         <h3>
@@ -105,7 +108,12 @@ if (username) {
                                 </tr>
                             ))}
                         </table>
+                        <h3>Graf úloh dle dokončenosti</h3>
                         <canvas id="pieChart" />
+                        <p>
+                            Graf ukazuje procentuální zastoupení dokončenosti
+                            úloh.
+                        </p>
                     </>
                 )
             ) : (
@@ -133,9 +141,9 @@ if (username) {
     img {
         max-width: 200px;
         max-height: 200px;
-        vertical-align: middle;
-        margin: 2em;
         border-radius: 10px;
+        margin: 1em;
+        margin-top: 0px;
     }
 
     :global(main > *) {
@@ -144,10 +152,7 @@ if (username) {
 
     .inline {
         text-align: center;
-    }
-
-    .inline > * {
-        display: inline-block;
+        display: inline-flex;
     }
 
     .name-container {
@@ -185,6 +190,19 @@ if (username) {
     canvas {
         max-height: 200px;
         max-width: 400px;
+        background-color: #fbfffe;
+        color: black;
+        border-radius: 15px;
+    }
+
+    .position {
+        text-align: left !important;
+    }
+
+    @media (max-width: 480px) {
+        .inline {
+            display: block;
+        }
     }
 </style>
 
@@ -193,15 +211,16 @@ if (username) {
     document.addEventListener("DOMContentLoaded", function () {
         // Extract data from HTML table
         const table = document.getElementById("dataTable");
-        if (!table)
-            return;
+        if (!table) return;
         const labels = [];
         const dataValues = [];
 
         // Skip the header row and start from the second row
         for (let i = 1; i < table.rows.length; i++) {
             const category = table.rows[i].cells[0].innerText;
-            const value = parseFloat(table.rows[i].cells[1].innerText);
+            const value = parseFloat(
+                table.rows[i].cells[2].innerText.replace("%", ""),
+            );
 
             labels.push(category);
             dataValues.push(value);

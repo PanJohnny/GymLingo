@@ -14,10 +14,10 @@ if (!avatar.success) {
 }
 if (!avatar.avatar)
     return new Response(
-        await fetchImage(
+        (await fetchImage(
             "https://ui-avatars.com/api/?format=svg&name=" +
                 username.replaceAll(" ", "+"),
-        ),
+        )).blob,
         { headers: { "Content-Type": "image/svg+xml" }, status: 206},
     );
 

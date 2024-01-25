@@ -3,6 +3,9 @@ import { connect } from "../../util/database";
 import AppLayout from "../../layouts/AppLayout.astro";
 import ErrorOverlay from "../../components/ErrorOverlay.astro";
 import FinishedOverlay from "../../components/FinishedOverlay.astro";
+import pkg from "random-seed";
+const { create } = pkg;
+
 let Component = Fragment;
 let ComponentProps = {};
 const err = (tit, des) => {
@@ -21,9 +24,13 @@ if (
 }
 
 const group = Astro.url.searchParams.get("g");
-const index = Astro.url.searchParams.has("i")
+let index = Astro.url.searchParams.has("i")
     ? parseInt(Astro.url.searchParams.get("i"))
     : 0;
+let seed: any = Astro.url.searchParams.get("seed");
+if (!seed) {
+    seed = Math.floor(Math.random() * 1000);
+}
 
 let lesson = {
     czech: "",
@@ -58,7 +65,28 @@ if (!Astro.url.searchParams.has("g")) {
         err("Cvičení neexistuje", "Skupina cvičení neexistuje :(");
     } else {
         const lessons = res.lessons;
-        const l = lessons[index];
+        const generator = create(seed);
+
+        const generate = () => {
+            let arr = Object.keys(lessons);
+            let max = arr.length;
+
+            while (arr.length > 0) {
+                // Inclusive both
+                const num = generator.intBetween(0, max - 1);
+                if (arr.includes(num.toString())) {
+                    if (arr.length + index == max) {
+                        return num;
+                    } else {
+                        arr.splice(arr.indexOf(num.toString()), 1);
+                    }
+                }
+            }
+
+            return -1;
+        };
+
+        const l = lessons[generate()];
 
         if (index + 1 < lessons.length) {
             // Prefetch image to load it faster
@@ -75,7 +103,7 @@ if (!Astro.url.searchParams.has("g")) {
             }
         }
 
-        if (!l) {
+        if (index >= lessons.length) {
             Component = FinishedOverlay;
             ComponentProps = {
                 title: lessons[0].group,
@@ -114,7 +142,7 @@ function shuffle(array) {
     return array;
 }
 
-const nextLink = "?g=" + group + "&i=" + (index + 1);
+const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
 ---
 
 <AppLayout>
@@ -140,18 +168,20 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
 
                             <div class="floating-segment answer-f">
                                 <input type="text" id="answer" lang="pl" />
-                                <input
-                                    type="button"
-                                    value=""
-                                    title="Potvrdit"
-                                    class="submit inline-button"
-                                />
-                                <input
-                                    type="button"
-                                    value=""
-                                    title="Nevím"
-                                    class="help inline-button"
-                                />
+                                <div>
+                                    <input
+                                        type="button"
+                                        value=""
+                                        title="Potvrdit"
+                                        class="submit inline-button"
+                                    />
+                                    <input
+                                        type="button"
+                                        value=""
+                                        title="Nevím"
+                                        class="help inline-button"
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div class="imageContainer">
@@ -233,8 +263,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
             <h3>Správně</h3>
             <p class="explanation">{lesson.explanation}</p>
             <a role="button" title="další úloha" class="next" href={nextLink}
-                ></a
-            >
+            ></a>
         </div>
 
         <div class="incorrect" hidden>
@@ -254,8 +283,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
                 {lesson.czech} se polsky řekne {lesson.polish}
             </p>
             <a role="button" title="další úloha" class="next" href={nextLink}
-                ></a
-            >
+            ></a>
         </div>
     </footer>
 </AppLayout>
@@ -720,11 +748,13 @@ const nextLink = "?g=" + group + "&i=" + (index + 1);
         padding: 0px;
         overflow: hidden;
         max-width: 40%;
+        justify-content: space-between;
     }
 
     .answer-f > input[type="text"] {
         outline: none;
         background: none;
+        width: max-content;
     }
 
     .answer-f > * {

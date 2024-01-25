@@ -1,0 +1,19 @@
+---
+import { connect } from "../../util/database";
+
+const { auth, getLessons, end } = connect();
+const au = await auth(Astro.cookies.get("token").value);
+if (!au.success) { 
+    end();   
+    return Astro.redirect("/me/auth/login");
+}
+
+const lessons = await getLessons("*");
+end();
+if (lessons.success) {
+    const random = Math.floor(Math.random() * lessons.lessons.length);
+
+    return Astro.redirect("/app?g=" + encodeURIComponent(lessons.lessons[random].group));
+}
+return Astro.redirect("/app");
+---

@@ -42,12 +42,22 @@ if (
         title="Zadávání"
         querySelector="#wholeTranslate"
         x="right"
-        y="centre"
     >
         <p>
             V levé bublině se zobrazí slovo v češtině a vaším úkolem je ho pak
             přeložit do polštiny. Diakritika a speciální symboly nejsou potřeba
-            zadávat. Své rozhodnutí <b>odešlete klávesou <kbd>Enter</kbd></b>.
+            zadávat. Své rozhodnutí <b>odešlete klávesou <kbd>Enter</kbd></b> či
+            fajfkou. Pokud nevíte, klikněte na otazník.
+        </p>
+    </TutorialStep>
+    <TutorialStep number={3} title="Návod dokončen" querySelector="body">
+        <p>
+            Návod dokončen, kliknutím na logo se můžete vrátit na hlavní
+            stránku. Nebo klikněte na <em>Další</em> pro zobrazení celé stránky.
+        </p>
+        <p>
+            <b>Poznámka:</b> tato stránka není interaktivní, slouží jen k ilustračním
+            účelům.
         </p>
     </TutorialStep>
     <CommonHeader />
@@ -55,15 +65,25 @@ if (
         <div class="segment" id="wholeTranslate">
             <h2>Přeložte slovo</h2>
             <div class="translate">
-                <span class="floating-segment">{"Ovce"}</span>
+                <span class="floating-segment">Ovce</span>
 
-                <input
-                    type="text"
-                    id="answer"
-                    class="floating-segment"
-                    lang="pl"
-                    value="owca"
-                />
+                <div class="floating-segment answer-f">
+                    <input type="text" id="answer" lang="pl" value="owca" />
+                    <div>
+                        <input
+                            type="button"
+                            value=""
+                            title="Potvrdit"
+                            class="submit inline-button"
+                        />
+                        <input
+                            type="button"
+                            value=""
+                            title="Nevím"
+                            class="help inline-button"
+                        />
+                    </div>
+                </div>
             </div>
             <div class="imageContainer">
                 <img
@@ -137,5 +157,74 @@ if (
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+    }
+
+    input[type="text"] {
+        background: white;
+        outline: none;
+        border: none;
+        color: inherit;
+        display: inline;
+        max-width: 60%;
+    }
+
+    .answer-f {
+        display: flex;
+        background-color: white;
+        border-color: black;
+        color: black;
+        flex-direction: row;
+        padding: 0px;
+        overflow: hidden;
+        max-width: 40%;
+        justify-content: space-between;
+    }
+
+    .answer-f > input[type="text"] {
+        outline: none;
+        background: none;
+        width: max-content;
+    }
+
+    .answer-f > * {
+        display: inline-block;
+        font-size: 1em;
+    }
+
+    .inline-button {
+        all: unset;
+        width: 2em;
+        background-size: 80% auto;
+        height: 100%;
+        padding: 0px;
+        margin: 0px;
+        border-left: 1px solid black !important;
+        outline: none;
+        cursor: pointer;
+    }
+
+    .inline-button.submit {
+        background: url("/icons/check-solid.svg") no-repeat center;
+    }
+
+    .inline-button.help {
+        background: url("/icons/question-solid.svg") no-repeat center;
+    }
+
+    .icon {
+        max-height: 1em;
+        display: block;
+    }
+
+    .inline-button.submit:hover {
+        background-color: greenyellow;
+    }
+
+    .inline-button.help:hover {
+        background-color: orange;
+    }
+
+    h2 {
+        text-align: center;
     }
 </style>

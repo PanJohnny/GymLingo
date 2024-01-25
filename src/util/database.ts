@@ -809,6 +809,15 @@ GROUP BY \`group\`;
                 groupTotals: occurance,
                 userTotals: useOccurance
             };
+        }, getLeaderboard: async () => {
+            const [data, _] = await connection.query(`SELECT u.id as user_id, u.username, COUNT(l.user_id) as occurrences
+            FROM users u
+            LEFT JOIN lpu l ON u.id = l.user_id
+            GROUP BY u.id, u.username
+            ORDER BY occurrences DESC;
+            `);
+
+            return data;
         }
     }
 

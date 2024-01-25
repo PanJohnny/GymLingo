@@ -1,0 +1,113 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CommonHeader from "../components/CommonHeader.astro";
+import { connect } from "../util/database";
+
+const { auth, end, getLeaderboard } = connect();
+
+const au = await auth(Astro.cookies.get("token").value);
+if (!Astro.cookies.has("token") || !au.success) {
+    end();
+    return Astro.redirect("/me/auth/login");
+}
+const leaderboard: any = await getLeaderboard();
+end();
+let index = 1;
+---
+
+<Layout title="GymLingo" description="GymLingo - základy polštiny">
+    <CommonHeader title="Žebříček" />
+    <main>
+        <table>
+            <thead>
+                <th>###</th>
+                <th>Vaše pozice</th>
+                <th>###</th>
+            </thead>
+            <tr>
+                <td>
+                    {leaderboard.findIndex((i) => i.user_id == au.user.id) + 1}.
+                </td>
+                <td>
+                    {au.user.username}
+                </td>
+                <td>
+                    {
+                        leaderboard.find((i) => i.user_id == au.user.id)
+                            .occurrences
+                    }
+                </td>
+            </tr>
+        </table>
+        <table>
+            <thead>
+                <th>Pozice</th>
+                <th>Uživatel</th>
+                <th>Splněných lekcí</th>
+            </thead>
+            {
+                leaderboard.map((obj) => (
+                    <tr
+                        style={
+                            obj.user_id == au.user.id
+                                ? "background-color: green; color: white;"
+                                : undefined
+                        }
+                    >
+                        <>
+                            <td>{index++ + "."}</td>
+                            <td>
+                                <a
+                                    href={
+                                        "/user/" +
+                                        encodeURIComponent(obj.username)
+                                    }
+                                >
+                                    {obj.username}
+                                </a>
+                            </td>
+                            <td>{obj.occurrences}</td>
+                        </>
+                    </tr>
+                ))
+            }
+        </table>
+    </main>
+</Layout>
+
+<style>
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    main {
+        display: flex;
+        margin: 2em;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    :global(main > *) {
+        margin-bottom: 2em;
+    }
+
+    table {
+        min-width: 60%;
+        max-width: 80%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        padding-bottom: 0.5em;
+        border-bottom: 2px solid black;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+    }
+</style>

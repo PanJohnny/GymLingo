@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.6.0",
+    "@types/random-seed": "^0.3.5",
     "astro": "^4.0.9"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
     "bcryptjs": "^2.4.3",
     "highlight.js": "^11.8.0",
     "mysql2": "^3.6.1",
+    "random-seed": "^0.3.0",
     "sharp": "^0.33.1",
     "typescript": "^5.2.2",
     "util": "^0.12.5"

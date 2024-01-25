@@ -15,18 +15,33 @@ if (
 <Layout title="GymLingo" description="GymLingo - základy polštiny">
 	<CommonHeader />
 	<main>
-		<nav>
-			<a href="/slovnik">Veškerá evidovaná slovíčka naleznete zde</a>
-		</nav>
+		<div class="panel">
+			<a href="/leaderboard"
+				><h3>
+					<i class="chart-icon icon" aria-hidden></i> Žebříček
+				</h3></a
+			>
+			<a href="/user"
+				><h3>
+					<i class="user-icon icon" aria-hidden></i> Váš přehled
+				</h3></a
+			>
+
+			<a href="/app/random"
+				><h3>
+					<i class="random-icon icon" aria-hidden></i> Náhodné cvičení
+				</h3></a
+			>
+		</div>
 		<GroupShowcase
 			title="Zvířata"
-			group="animals"
+			group="zvířata"
 			image="/boars.jpg"
 			image_desc='Foto <a href="https://pixabay.com/users/webandi-1460261/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2256293">Andreas Lischka</a>'
 		/>
 		<GroupShowcase
 			title="Základní fráze"
-			group="phrases"
+			group="základní fráze"
 			image="/people.jpg"
 			image_desc='Foto <a href="https://pixabay.com/users/mabelamber-1377835/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3163556">Mabel Amber</a>'
 		/>
@@ -37,24 +52,76 @@ if (
 			image_desc="Vyzkoušejte si nové styly odpovědí"
 		/>
 	</main>
+
+	<style>
+		:root {
+			--light: #fbfffe;
+			--dark: #1c3041;
+		}
+
+		header {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+		}
+
+		main {
+			display: flex;
+			margin: 2em;
+			align-items: center;
+			justify-content: center;
+			flex-direction: column;
+		}
+
+		:global(main > *) {
+			margin-bottom: 2em;
+		}
+
+		.chart-icon {
+			-webkit-mask: url("/icons/chart-simple-solid.svg") no-repeat center;
+			mask: url("/icons/chart-simple-solid.svg") no-repeat center;
+		}
+
+		.user-icon {
+			-webkit-mask: url("/icons/user-solid.svg") no-repeat center;
+			mask: url("/icons/user-solid.svg") no-repeat center;
+		}
+
+		.random-icon {
+			-webkit-mask: url("/icons/question-solid.svg") no-repeat center;
+			mask: url("/icons/question-solid.svg") no-repeat center;
+		}
+
+		.icon {
+			background-color: var(--dark);
+			width: auto;
+			height: 4em;
+			width: 100%;
+			display: block;
+		}
+
+		@media screen and (prefers-color-scheme: dark) {
+			.icon {
+				background-color: var(--light);
+			}
+		}
+
+		@media (max-width: 600px) {
+			.icon {
+				height: 2em;
+			}
+
+			.h3 {
+				font-size: 80%;
+			}
+		}
+
+		.panel {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-evenly;
+			width: 80%;
+			text-align: center;
+		}
+	</style>
 </Layout>
-
-<style>
-	header {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-	}
-
-	main {
-		display: flex;
-		margin: 2em;
-		align-items: center;
-		justify-content: center;
-		flex-direction: column;
-	}
-
-	:global(main > *) {
-		margin-bottom: 2em;
-	}
-</style>

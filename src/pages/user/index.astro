@@ -1,0 +1,12 @@
+---
+import { connect } from "../../util/database";
+
+const { auth, end } = connect();
+const au = await auth(Astro.cookies.get("token").value);
+end();
+if (!au.success) {    
+    return Astro.redirect("/me/auth/login");
+}
+
+return Astro.redirect("/user/" + au.user.username)
+---
