@@ -747,7 +747,8 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
         flex-direction: row;
         padding: 0px;
         overflow: hidden;
-        max-width: 40%;
+        max-width: 50%;
+        height: 2em;
         justify-content: space-between;
     }
 
@@ -817,6 +818,12 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
 
         img {
             max-height: 350px;
+        }
+    }
+
+    @media (max-width: 530px) {
+        .inline-button {
+            width: 1.5em;
         }
     }
 </style>
