@@ -1,15 +1,20 @@
 ---
 import GroupShowcase from "../components/GroupShowcase.astro";
-import UserInfo from "../components/UserInfo.astro";
 import Layout from "../layouts/Layout.astro";
 import CommonHeader from "../components/CommonHeader.astro";
-import { isValidUser } from "../util/database";
+import { connect } from "../util/database";
 
-if (
-	!Astro.cookies.has("token") ||
-	!(await isValidUser(Astro.cookies.get("token").value))
-)
+const { auth, getGroups, end } = connect();
+const au = await auth(Astro.cookies.get("token").value);
+if (!au.success) {
+	end();
 	return Astro.redirect("/me/auth/login");
+}
+
+let groups: any = await getGroups();
+end();
+
+groups = groups.map((g) => g.group);
 ---
 
 <Layout title="GymLingo" description="GymLingo - základy polštiny">
@@ -33,24 +38,7 @@ if (
 				</h3></a
 			>
 		</div>
-		<GroupShowcase
-			title="Zvířata"
-			group="zvířata"
-			image="/boars.jpg"
-			image_desc='Foto <a href="https://pixabay.com/users/webandi-1460261/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2256293">Andreas Lischka</a>'
-		/>
-		<GroupShowcase
-			title="Základní fráze"
-			group="základní fráze"
-			image="/people.jpg"
-			image_desc='Foto <a href="https://pixabay.com/users/mabelamber-1377835/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3163556">Mabel Amber</a>'
-		/>
-		<GroupShowcase
-			title="Testování nových stylů"
-			group="test"
-			image="/favicon.svg"
-			image_desc="Vyzkoušejte si nové styly odpovědí"
-		/>
+		{groups.map((g) => <GroupShowcase group={g} />)}
 	</main>
 
 	<style>

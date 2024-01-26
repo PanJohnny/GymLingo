@@ -1,16 +1,13 @@
 ---
 import { connect } from "../util/database";
 interface Props {
-    title: string;
-    image: string;
     group: string;
-    image_desc: string;
 }
 
 const isGuest =
     Astro.cookies.has("guest") && Astro.cookies.get("guest").boolean();
 
-const { title, image, group, image_desc } = Astro.props;
+const { group } = Astro.props;
 
 const { getFinishedLessonsByUserInGroup, end } = connect();
 const gf = await getFinishedLessonsByUserInGroup(
@@ -19,14 +16,35 @@ const gf = await getFinishedLessonsByUserInGroup(
 );
 
 end();
+
+function capitalizeFirstLetter(str) {
+    return `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
+}
+
+let imageQuery = group;
+let aq = imageQuery;
+if (imageQuery.includes(" ")) {
+    const a = imageQuery.split(" ");
+    imageQuery = a[a.length - 1];
+    aq = a[0];
+    if (imageQuery.endsWith("ní")) {
+        imageQuery = imageQuery.substring(0, imageQuery.length - 2);
+    }
+
+    if (aq.endsWith("ní")) {
+        aq = aq.substring(0, aq.length - 2);
+    }
+}
 ---
 
 <div class="show">
     <div class="image-wrapper">
         <a href={"/app?g=" + encodeURIComponent(group)}>
-            <img src={image} aria-hidden="true" />
+            <img
+                src={"/api/v2/image?large=true&q=" + encodeURIComponent(imageQuery) + "&aq=" + aq}
+                aria-hidden="true"
+            />
         </a>
-        <div class="image-desc" aria-hidden="true" set:html={image_desc} />
     </div>
     {
         !isGuest ? (
@@ -40,14 +58,16 @@ end();
             </span>
         ) : undefined
     }
-    <a href={"/app?g=" + encodeURIComponent(group)}><h2>{title}</h2></a>
+    <a href={"/app?g=" + encodeURIComponent(group)}
+        ><h2>{capitalizeFirstLetter(group)}</h2></a
+    >
 </div>
 <style>
     img {
         width: 80vw;
         height: 20vh;
         object-fit: cover;
-        object-position: 50% 50%;
+        object-position: center 30%;
     }
 
     .show {
@@ -59,13 +79,6 @@ end();
 
     .image-wrapper {
         position: relative;
-    }
-
-    .image-desc {
-        position: absolute;
-        bottom: 8px;
-        right: 15px;
-        z-index: 2;
     }
 
     h2 {

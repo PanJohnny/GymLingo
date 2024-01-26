@@ -818,6 +818,13 @@ GROUP BY \`group\`;
             `);
 
             return data;
+        }, getGroups: async () => {
+            const [data, _] = await connection.query(`
+            SELECT DISTINCT \`group\`
+            FROM lessons;
+            `);
+
+            return data;
         }
     }
 
