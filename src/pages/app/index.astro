@@ -160,9 +160,19 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
     <main transition:animate="fade">
         <div id="input">
             {
-                lesson.type == "1" ? (
+                lesson.type == "1" || lesson.type == "3" ? (
                     <div class="segment">
-                        <h2>Přeložte slovo</h2>
+                        <h2>
+                            {lesson.type == "1"
+                                ? "Přeložte do polštiny"
+                                : "Seřaďte správně slova"}
+                        </h2>
+                        {lesson.type == "3" ? (
+                            <p style="text-align: center">
+                                <b>Slova: </b>{" "}
+                                {shuffle(lesson.polish.split(" ")).join(", ")}
+                            </p>
+                        ) : undefined}
                         <div class="translate">
                             <span class="floating-segment">{lesson.czech}</span>
 
@@ -331,7 +341,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
 
             const submit: HTMLInputElement = document.querySelector(".submit");
 
-            if (data.type == 1) {
+            if (data.type == 1 || data.type == 3) {
                 answer.addEventListener("keyup", async (e) => {
                     if (e.key == "Enter") {
                         checkValue(answer.value);
@@ -375,7 +385,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
                     idk.hidden = true;
                     submit.hidden = true;
                     if (answer) {
-                        answer.disabled = true;
+                        answer.parentElement.innerHTML = request.lesson.polish;
                     }
                     help.hidden = true;
 
@@ -392,7 +402,6 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
                         c.querySelector(".explanation");
 
                     explain.innerText = request.lesson.explanation;
-                    if (answer) answer.value = request.lesson.polish;
                 } else {
                     c.hidden = true;
                     i.hidden = false;
@@ -745,7 +754,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
         border-color: black;
         color: black;
         flex-direction: row;
-        padding: 0px;
+        padding: 5px;
         overflow: hidden;
         max-width: 50%;
         height: 2em;
