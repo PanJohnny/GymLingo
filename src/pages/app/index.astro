@@ -732,6 +732,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
         flex-direction: row;
         justify-content: space-between;
         padding: 1em;
+        word-break: break-word;
     }
 
     .submit {
@@ -759,6 +760,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
         max-width: 50%;
         height: 2em;
         justify-content: space-between;
+        height: auto;
     }
 
     .answer-f > input[type="text"] {
@@ -768,7 +770,7 @@ const nextLink = "?g=" + group + "&i=" + (index + 1) + "&seed=" + seed;
     }
 
     .answer-f > * {
-        display: inline-block;
+        display: inline-flex;
         font-size: 1em;
     }
 
