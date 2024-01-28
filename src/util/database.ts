@@ -1,5 +1,6 @@
 import * as mysql from "mysql2";
 import bcrypt from "bcryptjs";
+import type { AstroCookies } from "astro";
 
 /**
  * Hashes the value with 8 salt cycles.
@@ -181,8 +182,19 @@ export const connect = () => {
 
             const lesson = lessons.lessons[0];
 
-            if (lesson.polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[\?\!]/gm, "").toLowerCase() !=
-                polish.normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[\?\!]/gm, "").toLowerCase()) {
+            const normalizeString = input => {
+                const diacriticsMap = {
+                    'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n',
+                    'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+                    'á': 'a', 'č': 'c', 'ď': 'd', 'é': 'e', 'ě': 'e',
+                    'í': 'i', 'ň': 'n', 'ř': 'r', 'š': 's',
+                    'ť': 't', 'ú': 'u', 'ů': 'u', 'ý': 'y', 'ž': 'z'
+                };
+
+                return input.toLowerCase().replace(/[ąćęłńóśźżáčďéěíňóřšťúůýž]/g, match => diacriticsMap[match] || match).replace(/[\?\!\.]/gm, "");
+            };
+
+            if (normalizeString(lesson.polish) != normalizeString(polish)) {
                 return {
                     success: false,
                     message: "Špatná odpověď",
@@ -836,6 +848,14 @@ export async function isValidUser(token: string) {
     const res = (await auth(token)).success;
     end();
     return res;
+}
+
+export async function authenticateUser(cookies: AstroCookies, auth: any) {
+    if (!cookies.has("token")) {
+        return responseJSON(false);
+    }
+
+    return await auth(cookies.get("token").value);
 }
 
 function responseJSON(success: boolean, dataFactory?: () => object, message?: string): any {

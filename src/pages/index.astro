@@ -2,10 +2,10 @@
 import GroupShowcase from "../components/GroupShowcase.astro";
 import Layout from "../layouts/Layout.astro";
 import CommonHeader from "../components/CommonHeader.astro";
-import { connect } from "../util/database";
+import { connect, authenticateUser } from "../util/database";
 
 const { auth, getGroups, end } = connect();
-const au = await auth(Astro.cookies.get("token").value);
+const au = await authenticateUser(Astro.cookies, auth);
 if (!au.success) {
 	end();
 	return Astro.redirect("/me/auth/login");
