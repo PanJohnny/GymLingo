@@ -25,6 +25,7 @@ const { title, description } = Astro.props as Props;
     <meta property="og:description" content={description} />
   </head>
   <body>
+    <div class="error">Z důvodu zrušení databáze ze strany zprostředkovatele momentálně aplikace nefunguje. Pokusím se migrovat všechna data, nebo se nějak domluvit. Opětovné spuštění očekávejte do 28. 2. 2024. Je možné, že už nikdy k tomuto spuštění nedojde.</div>
     <slot />
     <div class="wrapper">
       <div class:list={["info", "zm"]}>
@@ -126,6 +127,16 @@ const { title, description } = Astro.props as Props;
   :global(h1 > a) {
     text-decoration: none;
     color: inherit;
+  }
+
+  .error {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+    width: 100%;
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 20px;
   }
 </style>
 
