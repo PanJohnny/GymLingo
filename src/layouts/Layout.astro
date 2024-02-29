@@ -25,6 +25,7 @@ const { title, description } = Astro.props as Props;
     <meta property="og:description" content={description} />
   </head>
   <body>
+    <div class="error">Omlouvám se, ale aplikace je momentálně nedostupná z důvodu problému s hostingem databáze. Všechna uživatelská data jsou zazálohovaná, migrace databází proběhne snad co nejdřive. Pokud budete cokoliv potřebovat, prosím kontaktujte mě <a href="mailto:janstefanca@seznam.cz">janstefanca@seznam.cz</a>.</div>
     <slot />
     <div class="wrapper">
       <div class:list={["info", "zm"]}>
